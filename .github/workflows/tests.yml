@@ -1,0 +1,13 @@
+name: tests
+
+on: push
+
+jobs:
+  pytest:
+    # windows matches where the scripts actually run (setup.py reads the registry)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --locked
+      - run: uv run pytest
