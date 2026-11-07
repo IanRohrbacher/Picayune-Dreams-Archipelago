@@ -41,6 +41,12 @@ uv run scripts/diff_edit.py                  # logs/diff/<file>.diff for every _
 uv run scripts/diff_edit.py "*skillpoint*" --print
 ```
 
+## Building the patched game
+
+```sh
+uv run scripts/build.py                      # game_files/game + PicayuneDreams_edited -> game_files_modded/
+```
+
 ## Tests
 
 ```sh
