@@ -12,7 +12,7 @@ uv run scripts/setup.py
 `setup.py` asks for the game install and save folders (detected paths are offered; Enter accepts), then:
 
 1. copies the whitelisted game files into `game_files/game`
-2. creates the Archipelago save folder (`<save folder>/archipelago`)
+2. creates the test save template `game_files/save_template/game.sav` (`scripts/save_baseline.sav` plus the `[options]` of your `game.sav`)
 3. downloads the UndertaleModTool GUI and CLI
 4. decompiles `game_files/game/data.win` into `PicayuneDreams_extract` and checks it against `scripts/extract.sha256`
 
@@ -45,6 +45,7 @@ uv run scripts/diff_edit.py "*skillpoint*" --print
 
 ```sh
 uv run scripts/build.py                      # game_files/game + PicayuneDreams_edited -> game_files_modded/
+uv run scripts/build.py --fresh-save         # also reset game_files_modded/save/game.sav from the template
 ```
 
 ## Tests

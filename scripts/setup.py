@@ -1,7 +1,8 @@
 """First-time setup: gathers everything the repo needs but doesn't commit.
 
   1. copy the whitelisted game files      -> game_files/game   (work on a copy, never the install)
-  2. create the Archipelago save folder   -> <save folder>/archipelago
+  2. create the test save template        -> game_files/save_template/game.sav
+     (scripts/save_baseline.sav plus the [options] of <save folder>/game.sav)
   3. download UndertaleModTool GUI + CLI
   4. decompile game_files/game/data.win    -> PicayuneDreams_extract, then check it against the baseline
 
@@ -26,7 +27,6 @@ from pathlib import Path
 
 import check_extract
 from common import (
-    ARCHIPELAGO_SAVE_DIR_NAME,
     EDIT_DIR,
     EXPORT_CODE_SCRIPT,
     EXTRACT_DIR,
@@ -34,7 +34,10 @@ from common import (
     GAME_FILE_WHITELIST,
     GAME_FOLDER_NAME,
     ROOT,
+    SAVE_BASELINE,
+    SAVE_FILE_NAME,
     SAVE_FOLDER_NAME,
+    SAVE_TEMPLATE,
     UTMT_CLI_DIR,
     UTMT_CLI_URL,
     UTMT_DIR,
@@ -115,13 +118,43 @@ def copy_game_files(src: Path, dst: Path, force: bool) -> None:
         print(f"  not copied (not whitelisted): {', '.join(left_out)}")
 
 
-def create_archipelago_save_dir(save_dir: Path) -> None:
-    target = save_dir / ARCHIPELAGO_SAVE_DIR_NAME
-    if target.is_dir():
-        print(f"  skip: {target} already exists")
+def extract_section(text: str, name: str) -> str | None:
+    """Returns the INI section `name` (header line included, line endings kept), or None."""
+    lines = text.splitlines(keepends=True)
+    header = f"[{name}]"
+    start = next((i for i, line in enumerate(lines) if line.strip() == header), None)
+    if start is None:
+        return None
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[")), len(lines))
+    return "".join(lines[start:end])
+
+
+def build_save_template(baseline: str, options: str | None) -> str:
+    """Inserts the [options] section before the baseline's first section."""
+    if not options:
+        return baseline
+    if not options.endswith("\n"):
+        options += "\r\n"
+    return options + baseline
+
+
+def create_save_template(save_dir: Path, force: bool) -> None:
+    """Writes SAVE_TEMPLATE: the baseline save plus [options] from the user's game.sav."""
+    if SAVE_TEMPLATE.exists() and not force:
+        print(f"  skip: {SAVE_TEMPLATE.relative_to(ROOT)} already exists (--force to overwrite)")
         return
-    target.mkdir()
-    print(f"  created {target}")
+
+    real = save_dir / SAVE_FILE_NAME
+    options = None
+    if real.is_file():
+        options = extract_section(real.read_bytes().decode("utf-8", errors="replace"), "options")
+    if options is None:
+        print(f"  warning: no [options] in {real}; the template has the game's defaults")
+
+    baseline = SAVE_BASELINE.read_bytes().decode("utf-8")
+    SAVE_TEMPLATE.parent.mkdir(parents=True, exist_ok=True)
+    SAVE_TEMPLATE.write_bytes(build_save_template(baseline, options).encode("utf-8"))
+    print(f"  wrote {SAVE_TEMPLATE.relative_to(ROOT)}")
 
 
 def download_zip(url: str, target_dir: Path, exe_name: str, force: bool) -> None:
@@ -184,9 +217,9 @@ def main(argv: list[str] | None = None) -> int:
     game_dir = ask_dir("game install folder", detect_game_dir(), required_file="data.win")
     copy_game_files(game_dir, GAME_DIR, args.force)
 
-    print("[2/4] Archipelago save folder")
+    print("[2/4] test save template")
     save_dir = ask_dir("save data folder", detect_save_dir())
-    create_archipelago_save_dir(save_dir)
+    create_save_template(save_dir, args.force)
 
     print("[3/4] UndertaleModTool")
     download_zip(UTMT_URL, UTMT_DIR, "UndertaleModTool.exe", args.force)

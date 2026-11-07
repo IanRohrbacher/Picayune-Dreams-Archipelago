@@ -8,7 +8,15 @@ def make_layout(tmp_path, monkeypatch, with_gml=True):
     (game / "data.win").write_bytes(b"win")
     if with_gml:
         (edit / "gml_Object_a_Create_0.gml").write_text("x")
-    for name, value in {"ROOT": tmp_path, "GAME_DIR": game, "EDIT_DIR": edit, "MODDED_DIR": modded}.items():
+    paths = {
+        "ROOT": tmp_path,
+        "GAME_DIR": game,
+        "EDIT_DIR": edit,
+        "MODDED_DIR": modded,
+        "MODDED_SAVE_DIR": modded / "save",
+        "SAVE_TEMPLATE": tmp_path / "template" / "game.sav",
+    }
+    for name, value in paths.items():
         monkeypatch.setattr(build, name, value)
     monkeypatch.setattr("setup.ROOT", tmp_path)
     monkeypatch.setattr("setup.GAME_FILE_WHITELIST", ["data.win"])
@@ -25,6 +33,39 @@ def test_main_copies_game_files_then_imports(tmp_path, monkeypatch):
     assert (modded / "data.win").read_bytes() == b"win"
     assert (modded / "steam_appid.txt").read_text() == build.STEAM_APP_ID
     assert calls == [(game / "data.win", edit, modded / "data.win")]
+
+
+def test_main_keeps_the_current_save_by_default(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    build.SAVE_TEMPLATE.parent.mkdir()
+    build.SAVE_TEMPLATE.write_text("template")
+    (modded / "save").mkdir(parents=True)
+    (modded / "save" / "game.sav").write_text("mine")
+
+    assert build.main([]) == 0
+
+    assert (modded / "save" / "game.sav").read_text() == "mine"
+
+
+def test_main_fresh_save_replaces_the_save_with_the_template(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    build.SAVE_TEMPLATE.parent.mkdir()
+    build.SAVE_TEMPLATE.write_text("template")
+    (modded / "save").mkdir(parents=True)
+    (modded / "save" / "game.sav").write_text("mine")
+
+    assert build.main(["--fresh-save"]) == 0
+
+    assert (modded / "save" / "game.sav").read_text() == "template"
+
+
+def test_main_fresh_save_needs_the_template(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+
+    assert build.main(["--fresh-save"]) == 1
+    assert not modded.exists()
 
 
 def test_main_fails_without_edited_gml(tmp_path, monkeypatch):

@@ -30,8 +30,12 @@ GAME_FOLDER_NAME = "Picayune Dreams"
 # official install when the exe is started outside Steam
 STEAM_APP_ID = "2088840"
 SAVE_FOLDER_NAME = "PicayuneDreams"
+SAVE_FILE_NAME = "game.sav"
 # must match global.save_dir in PicayuneDreams_edited/gml_Object_obj_init_Create_0.gml
-ARCHIPELAGO_SAVE_DIR_NAME = "archipelago"
+MODDED_SAVE_DIR = MODDED_DIR / "save"
+# committed fresh profile (default values only); setup adds the user's [options] to it
+SAVE_BASELINE = ROOT / "scripts" / "save_baseline.sav"
+SAVE_TEMPLATE = GAME_FILES_DIR / "save_template" / SAVE_FILE_NAME
 
 # everything the game ships with; anything else in the install is left behind
 GAME_FILE_WHITELIST = [
