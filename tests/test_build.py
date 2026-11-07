@@ -68,6 +68,41 @@ def test_main_fresh_save_needs_the_template(tmp_path, monkeypatch):
     assert not modded.exists()
 
 
+def test_find_duplicates_searches_subfolders_ignoring_case(tmp_path):
+    (tmp_path / "a" / "b").mkdir(parents=True)
+    (tmp_path / "x.gml").write_text("1")
+    (tmp_path / "a" / "X.gml").write_text("2")
+    (tmp_path / "a" / "b" / "x.gml").write_text("3")
+    (tmp_path / "a" / "y.gml").write_text("4")
+
+    duplicates = build.find_duplicates(tmp_path)
+
+    assert list(duplicates) == ["x.gml"]
+    assert len(duplicates["x.gml"]) == 3
+
+
+def test_main_fails_and_names_duplicates(tmp_path, monkeypatch, capsys):
+    _, edit, modded = make_layout(tmp_path, monkeypatch)
+    (edit / "current").mkdir()
+    (edit / "current" / "gml_Object_a_Create_0.gml").write_text("y")
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+
+    assert build.main([]) == 1
+
+    out = capsys.readouterr().out
+    assert "edited" in out and "current" in out and "gml_Object_a_Create_0.gml" in out
+    assert not modded.exists()
+
+
+def test_main_accepts_files_in_subfolders(tmp_path, monkeypatch):
+    _, edit, _ = make_layout(tmp_path, monkeypatch, with_gml=False)
+    (edit / "current").mkdir()
+    (edit / "current" / "gml_Object_b_Create_0.gml").write_text("y")
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+
+    assert build.main([]) == 0
+
+
 def test_main_fails_without_edited_gml(tmp_path, monkeypatch):
     _, _, modded = make_layout(tmp_path, monkeypatch, with_gml=False)
 

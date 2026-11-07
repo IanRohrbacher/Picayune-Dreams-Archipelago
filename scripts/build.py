@@ -4,7 +4,8 @@
      plus steam_appid.txt
   2. with --fresh-save, replace game_files_modded/save/game.sav with the
      template made by scripts/setup.py; otherwise the current save is kept
-  3. import every PicayuneDreams_edited/*.gml into data.win with the
+  3. import every .gml under PicayuneDreams_edited (all subfolders; a file
+     name used twice fails the build) into data.win with the
      UndertaleModTool CLI, saving the result as game_files_modded/data.win
 
 game_files/game/data.win is only read. Each build starts from the unmodified
@@ -39,6 +40,14 @@ def write_steam_appid(dst) -> None:
     """Writes steam_appid.txt so the exe runs the build in dst, not the Steam install."""
     (dst / "steam_appid.txt").write_text(STEAM_APP_ID, encoding="ascii")
     print("  wrote steam_appid.txt")
+
+
+def find_duplicates(edit_dir) -> dict[str, list]:
+    """Maps each file name used more than once under edit_dir (any depth) to its paths."""
+    by_name: dict[str, list] = {}
+    for path in sorted(edit_dir.rglob("*.gml")):
+        by_name.setdefault(path.name.lower(), []).append(path)
+    return {name: paths for name, paths in by_name.items() if len(paths) > 1}
 
 
 def install_fresh_save(template, save_dir) -> bool:
@@ -84,8 +93,16 @@ def main(argv: list[str] | None = None) -> int:
     if not (GAME_DIR / "data.win").exists():
         print(f"error: {GAME_DIR.relative_to(ROOT)}/data.win not found (run scripts/setup.py)")
         return 1
-    if not any(EDIT_DIR.glob("*.gml")):
+    if not any(EDIT_DIR.rglob("*.gml")):
         print(f"error: no .gml files in {EDIT_DIR.relative_to(ROOT)}")
+        return 1
+    duplicates = find_duplicates(EDIT_DIR)
+    if duplicates:
+        print(f"error: the same file name is used more than once in {EDIT_DIR.relative_to(ROOT)}:")
+        for paths in duplicates.values():
+            for path in paths:
+                print(f"  {path.relative_to(ROOT)}")
+            print()
         return 1
 
     if args.fresh_save and not SAVE_TEMPLATE.is_file():

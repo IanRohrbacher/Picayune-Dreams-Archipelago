@@ -1,4 +1,4 @@
-// Replaces code entries with every <PDA_IMPORT_DIR>/*.gml file.
+// Replaces code entries with every .gml file under <PDA_IMPORT_DIR> (all subfolders).
 // scripts/build.py runs this through UndertaleModCli.
 //
 // Each file name is the code entry name, so only existing entries are replaced.
@@ -16,7 +16,7 @@ if (string.IsNullOrEmpty(codeFolder))
     return;
 }
 
-string[] files = Directory.GetFiles(codeFolder, "*.gml");
+string[] files = Directory.GetFiles(codeFolder, "*.gml", SearchOption.AllDirectories);
 if (files.Length == 0)
 {
     ScriptError("No .gml files in " + codeFolder);
