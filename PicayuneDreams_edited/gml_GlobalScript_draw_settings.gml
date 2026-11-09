@@ -1124,7 +1124,7 @@ function draw_settings()
         
         draw_sprite_ext(sui_spr, 0, sui_butt_h_width + 150, var_Screenh - sui_butt_h_height - 2, 1, 1, 0, c_white, sui_hover_alph);
         
-        if (global.gamemode != "daily" && global.gamemode != "monthly" && global.has_beaten_game > 0)
+        if (global.has_beaten_game > 0)
         {
             sui_spr = global.sprites.spr_sett_restart;
             sui_butt_width = sprite_get_width(sui_spr);
