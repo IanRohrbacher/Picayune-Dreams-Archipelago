@@ -1,1 +1,2 @@
-// saverestore variable button
+// removes saverestore button
+instance_destroy();
