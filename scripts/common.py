@@ -22,11 +22,20 @@ UTMT_URL = f"{_UTMT_RELEASE}/UndertaleModTool_v{UTMT_VERSION}-Windows-SingleFile
 UTMT_CLI_DIR = ROOT / f"UTMT_CLI_v{UTMT_VERSION}-Windows"
 UTMT_CLI_URL = f"{_UTMT_RELEASE}/UTMT_CLI_v{UTMT_VERSION}-Windows.zip"
 EXPORT_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "export_code.csx"
+IMPORT_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "import_code.csx"
+MODDED_DIR = ROOT / "game_files_modded"
 
 GAME_FOLDER_NAME = "Picayune Dreams"
+# steam_appid.txt next to the exe stops the Steam API from relaunching the
+# official install when the exe is started outside Steam
+STEAM_APP_ID = "2088840"
 SAVE_FOLDER_NAME = "PicayuneDreams"
+SAVE_FILE_NAME = "game.sav"
 # must match global.save_dir in PicayuneDreams_edited/gml_Object_obj_init_Create_0.gml
-ARCHIPELAGO_SAVE_DIR_NAME = "archipelago"
+MODDED_SAVE_DIR = MODDED_DIR / "save"
+# committed fresh profile (default values only); setup adds the user's [options] to it
+SAVE_BASELINE = ROOT / "scripts" / "save_baseline.sav"
+SAVE_TEMPLATE = GAME_FILES_DIR / "save_template" / SAVE_FILE_NAME
 
 # everything the game ships with; anything else in the install is left behind
 GAME_FILE_WHITELIST = [
