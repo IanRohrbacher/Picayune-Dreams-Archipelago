@@ -48,6 +48,14 @@ GAME_FILE_WHITELIST = [
 ]
 
 
+def find_duplicates(edit_dir: Path) -> dict[str, list[Path]]:
+    """Maps each .gml file name used more than once under edit_dir (any depth, case-insensitive) to its paths."""
+    by_name: dict[str, list[Path]] = {}
+    for path in sorted(edit_dir.rglob("*.gml")):
+        by_name.setdefault(path.name.lower(), []).append(path)
+    return {name: paths for name, paths in by_name.items() if len(paths) > 1}
+
+
 def match_names(names: list[str], patterns: list[str]) -> tuple[list[str], list[str]]:
     """Filters file names by name (".gml" optional), glob pattern or path.
 

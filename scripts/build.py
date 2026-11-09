@@ -32,6 +32,7 @@ from common import (
     SAVE_TEMPLATE,
     STEAM_APP_ID,
     UTMT_CLI_DIR,
+    find_duplicates,
 )
 from setup import copy_game_files
 
@@ -40,14 +41,6 @@ def write_steam_appid(dst) -> None:
     """Writes steam_appid.txt so the exe runs the build in dst, not the Steam install."""
     (dst / "steam_appid.txt").write_text(STEAM_APP_ID, encoding="ascii")
     print("  wrote steam_appid.txt")
-
-
-def find_duplicates(edit_dir) -> dict[str, list]:
-    """Maps each file name used more than once under edit_dir (any depth) to its paths."""
-    by_name: dict[str, list] = {}
-    for path in sorted(edit_dir.rglob("*.gml")):
-        by_name.setdefault(path.name.lower(), []).append(path)
-    return {name: paths for name, paths in by_name.items() if len(paths) > 1}
 
 
 def install_fresh_save(template, save_dir) -> bool:
