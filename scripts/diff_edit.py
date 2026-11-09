@@ -1,8 +1,10 @@
 """Diffs PicayuneDreams_edited files against their originals in
 PicayuneDreams_extract, writing one log per file to logs/diff/<name>.diff.
 
-Files can be picked by name (".gml" optional) or glob pattern; with none
-given every _edited file is diffed and stale logs are removed.
+Edited files are found in PicayuneDreams_edited and all its subfolders; a
+file name used twice fails the run. Files can be picked by name (".gml"
+optional) or glob pattern; with none given every edited file is diffed and
+stale logs are removed.
 
 usage:
     uv run scripts/diff_edit.py
@@ -15,7 +17,7 @@ import difflib
 import sys
 from pathlib import Path
 
-from common import EDIT_DIR, EXTRACT_DIR, LOG_DIR, ROOT, match_names
+from common import EDIT_DIR, EXTRACT_DIR, LOG_DIR, ROOT, find_duplicates, match_names
 
 DIFF_LOG_DIR = LOG_DIR / "diff"
 
@@ -88,7 +90,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: {directory.relative_to(ROOT)} not found")
             return 2
 
-    edit_names = [path.relative_to(EDIT_DIR).as_posix() for path in EDIT_DIR.rglob("*") if path.is_file()]
+    duplicates = find_duplicates(EDIT_DIR)
+    if duplicates:
+        print(f"error: the same file name is used more than once in {EDIT_DIR.relative_to(ROOT)}:")
+        for paths in duplicates.values():
+            for path in paths:
+                print(f"  {path.relative_to(ROOT)}")
+            print()
+        return 1
+
+    edit_names = [path.relative_to(EDIT_DIR).as_posix() for path in EDIT_DIR.rglob("*.gml")]
     names, unmatched = match_names(edit_names, args.files)
     for pattern in unmatched:
         print(f"no _edited file matches: {pattern}")
@@ -100,8 +111,10 @@ def main(argv: list[str] | None = None) -> int:
                 stale.unlink()
 
     for name in names:
-        original = EXTRACT_DIR / name
-        lines = diff_file(original, EDIT_DIR / name, name)
+        # the extract is flat: an edited file's original has the same file name
+        file_name = Path(name).name
+        original = EXTRACT_DIR / file_name
+        lines = diff_file(original, EDIT_DIR / name, file_name)
 
         if args.print:
             sys.stdout.writelines(lines)

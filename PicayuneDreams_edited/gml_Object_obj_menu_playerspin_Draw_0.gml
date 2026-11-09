@@ -6,7 +6,18 @@ var mod_count = struct_names_count(global.mods);
 if (mod_count > 0)
     draw_text(global.screenw - 37, global.screenh - 20, "MODS: " + string(mod_count));
 
-draw_text(global.screenw - 67, global.screenh - 10, "1.1.0.18 " + global.ap_version);
+if (global.ap_debug_tools)
+{
+    var rain = c_rainbow(get_timer() / 10000);
+    var debug_x = global.screenw - 67;
+    var debug_y = global.screenh - 30;
+    draw_sprite_ext(global.sprites.spr_pickup_floppy, 0, debug_x - 15, debug_y + 5, 1, 1, 0, c_white, draw_get_alpha());
+    draw_set_color(rain);
+    draw_text(debug_x, debug_y, "DEBUG ON");
+    draw_set_color(65280);
+}
+
+draw_text(global.screenw - 90, global.screenh - 10, "1.1.0.18 " + global.ap_version);
 draw_set_alpha(1);
 
 if (global.points_spent < global.points_avaliable)

@@ -1,1 +1,2 @@
-// savenuke variable hold
+// removes savenuke button
+instance_destroy();

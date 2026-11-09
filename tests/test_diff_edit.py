@@ -1,4 +1,42 @@
+import diff_edit
 from diff_edit import diff_file, summarize
+
+
+def patch_dirs(tmp_path, monkeypatch):
+    extract, edit = make_dirs(tmp_path)
+    monkeypatch.setattr(diff_edit, "ROOT", tmp_path)
+    monkeypatch.setattr(diff_edit, "EXTRACT_DIR", extract)
+    monkeypatch.setattr(diff_edit, "EDIT_DIR", edit)
+    monkeypatch.setattr(diff_edit, "DIFF_LOG_DIR", tmp_path / "logs")
+    return extract, edit
+
+
+def test_main_finds_originals_for_files_in_subfolders(tmp_path, monkeypatch, capsys):
+    extract, edit = patch_dirs(tmp_path, monkeypatch)
+    (edit / "current" / "steam").mkdir(parents=True)
+    (extract / "a.gml").write_text("one\ntwo\n")
+    (edit / "current" / "steam" / "a.gml").write_text("one\n2\n")
+    (edit / "current" / "steam" / "notes.txt").write_text("ignored")
+
+    assert diff_edit.main([]) == 0
+
+    assert "current/steam/a.gml: +1 -1" in capsys.readouterr().out
+    log = (tmp_path / "logs" / "a.diff").read_text()
+    assert "--- extract/a.gml" in log and "+2\n" in log
+    assert not (tmp_path / "logs" / "notes.diff").exists()
+
+
+def test_main_fails_on_duplicate_names(tmp_path, monkeypatch, capsys):
+    _, edit = patch_dirs(tmp_path, monkeypatch)
+    (edit / "x").mkdir()
+    (edit / "a.gml").write_text("1")
+    (edit / "x" / "a.gml").write_text("2")
+
+    assert diff_edit.main([]) == 1
+
+    out = capsys.readouterr().out
+    assert "edit" in out and "a.gml" in out
+    assert not (tmp_path / "logs").exists()
 
 
 def make_dirs(tmp_path):

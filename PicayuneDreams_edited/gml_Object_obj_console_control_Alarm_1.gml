@@ -158,19 +158,6 @@ else if (init_num == 31)
 {
     addtxt = "OVERDRIVE: " + string(obj_stat_track.overdrive);
 }
-else if (init_num == 32)
-{
-    var add_monthly = "FALSE";
-    var add_daily = "FALSE";
-    
-    if (global.gamemode == "daily")
-        add_daily = global.get_cur_seed;
-    
-    if (global.gamemode == "monthly")
-        add_monthly = global.get_cur_seed_monthly;
-    
-    addtxt = "DAILY: " + string(add_daily) + "; MONTHLY: " + string(add_monthly);
-}
 else if (init_num == 33)
 {
     addtxt = "LAST DAMAGED BY: " + string(global.killed_by) + ".";

@@ -131,6 +131,244 @@ function scr_rightsideupgrade(arg0)
         upgrade_hover_preview_index = approach(upgrade_hover_preview_index, sprite_get_number(upgrade_hover_preview_sprite) - 1, 0.25);
     }
     
+    if (global.debug == true)
+    {
+        var gap_between = 17;
+        var but_amm = 16;
+        var get_visual_alph = 1;
+        var allow_hold = false;
+        
+        for (var i = 0; i < but_amm; i += 1)
+        {
+            var cheat_butt_x = ((width_of_screen / 2) + (i * gap_between)) - (but_amm * (gap_between / 2));
+            var cheat_butt_y = height_of_screen - (32 + wave(-1, 1, 2, i / 10));
+            var image_alph = 0.5;
+            
+            if (point_in_rectangle(mouse_x, mouse_y, (var_Camx + cheat_butt_x) - 8, (var_Camy + cheat_butt_y) - 8, var_Camx + cheat_butt_x + 8, var_Camy + cheat_butt_y + 8))
+            {
+                image_alph = 1;
+                var cam_get_x = camera_get_view_x(view_camera[0]);
+                var cam_get_y = camera_get_view_y(view_camera[0]);
+                var realmousexx = mouse_x - cam_get_x;
+                var realmouseyy = mouse_y - cam_get_y;
+                var title = "TITLE!";
+                var desc = "Test";
+                
+                if (i == 0)
+                {
+                    title = "GODMODE [" + string(obj_view.godmode) + "]";
+                    desc = "When this is enabled, you are immune to all damage.";
+                }
+                
+                if (i == 1)
+                {
+                    title = "HYPER-REGEN [" + string(obj_view.super_regen) + "]";
+                    desc = "When this is enabled, your health will rapidly regenerate to its maximum.";
+                }
+                
+                if (i == 2)
+                {
+                    title = "LEVEL UP";
+                    desc = "Clicking this will spawn a Floppy Disk pickup at your position.";
+                    allow_hold = true;
+                }
+                
+                if (i == 3)
+                {
+                    title = "ADJUST MORTALITY [" + string(obj_control.diff_gameminutes) + "]";
+                    desc = "Left Clicking this will raise the Mortality level. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                if (i == 4)
+                {
+                    title = "PAUSE MORTALITY [" + string(obj_view.mortality_pause) + "]";
+                    desc = "Clicking this will stop the Mortality from rising. You can click it again to resume.";
+                }
+                
+                if (i == 5)
+                {
+                    title = "ADJUST BOSSES_KILLED [" + string(obj_control.bosses_killed) + "]";
+                    desc = "Left Clicking this will raise the MAINLINE bosses you have killed. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                if (i == 6)
+                {
+                    title = "ADJUST REROLLS [" + string(obj_control.rerolls) + "]";
+                    desc = "Left Clicking this will give you a reroll. Right Clicking will remove one.";
+                    allow_hold = true;
+                }
+                
+                if (i == 7)
+                {
+                    title = "ADJUST BLACKHOLES [" + string(obj_control.blackhole) + "/" + string(obj_control.blackholemax) + "]";
+                    desc = "Left Clicking this will give you a Blackhole Bomb. Right Clicking will remove one. It will also adjust your Maximum Blackholes accordingly.";
+                    allow_hold = true;
+                }
+                
+                if (i == 8)
+                {
+                    title = "ADJUST MAX_ITEMS [" + string(obj_control.max_items) + "]";
+                    desc = "Left Clicking this will give you an additional upgrade slot. Right Clicking will remove one.";
+                    allow_hold = true;
+                }
+                
+                if (i == 9)
+                {
+                    title = "NUKE ENEMIES";
+                    desc = "Clicking this will set all enemies currently alive to 1 HP.";
+                }
+                
+                if (i == 10)
+                {
+                    title = "ALLOW ENEMY SPAWNS [" + string(obj_control.spawnenemies) + "]";
+                    desc = "Clicking this will toggle enemy spawns on and off. This will automatically change before and after boss fights. Also makes Mortality rise.";
+                }
+                
+                if (i == 11)
+                {
+                    title = "ADJUST SPAWNCAP [" + string(obj_view.spawncap_cheat) + "x]";
+                    desc = "Left Clicking this will raise the % of enemies allowed to spawn at the current Mortality. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                if (i == 12)
+                {
+                    title = "ADJUST MOVESPEED [" + string(obj_view.movespeed_cheat) + "x]";
+                    desc = "Left Clicking this will raise the % of Cyl's movement speed. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                if (i == 13)
+                {
+                    title = "ADJUST XP_MOD [" + string(obj_control.xp_mod_final) + "x]";
+                    desc = "Left Clicking this will raise the efficiency of XP. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                if (i == 14)
+                {
+                    title = "LOCK LEVEL [" + string(obj_view.levelupstop_cheat) + "]";
+                    desc = "Clicking this will stop the level up screen from triggering.";
+                }
+                
+                if (i == 15)
+                {
+                    title = "ADJUST GAMESPEED [" + string(obj_control.fast_forward_mod) + "]";
+                    desc = "Left Clicking this will raise the fastforwarded GameSpeed. Right Clicking will lower it.";
+                    allow_hold = true;
+                }
+                
+                draw_set_halign(fa_center);
+                var rain = c_rainbow(get_timer() / 10000);
+                outline_text_ext(string(title), realmousexx + 12, realmouseyy - 80, rain, 0, 1, -1, 99999, 1, 1, 0);
+                outline_text_ext(string(desc), realmousexx + 12, realmouseyy - 64, 16777215, 0, 1, -1, 200, 1, 1, 0);
+                draw_set_halign(fa_left);
+                var mouse_check_press = 0;
+                
+                if (allow_hold == true)
+                    mouse_check_press = mouse_check_button(mb_left) - mouse_check_button(mb_right);
+                else
+                    mouse_check_press = mouse_check_button_pressed(mb_left) - mouse_check_button_pressed(mb_right);
+                
+                if (mouse_check_press != 0)
+                {
+                    if (click_timer <= 0)
+                    {
+                        click_timer = click_delay;
+                        
+                        if (click_delay > 0)
+                            click_delay -= 1;
+                        
+                        playsnd(global.sounds.snd_menu_click, 2, false, 0.3);
+                        image_alph = 0.1;
+                        cheat_butt_y -= 4;
+                        
+                        if (i == 0)
+                            obj_view.godmode = !obj_view.godmode;
+                        
+                        if (i == 1)
+                            obj_view.super_regen = !obj_view.super_regen;
+                        
+                        if (i == 2)
+                        {
+                            var pickup = instance_create_layer(obj_player.x, obj_player.y, "Effects", obj_unique_pickup);
+                            pickup.sprite_index = global.sprites.spr_pickup_floppy;
+                        }
+                        
+                        if (i == 3)
+                        {
+                            obj_control.diff_gameminutes += mouse_check_press;
+                            obj_control.diff_gameminutes = round(obj_control.diff_gameminutes);
+                        }
+                        
+                        if (i == 4)
+                            obj_view.mortality_pause = !obj_view.mortality_pause;
+                        
+                        if (i == 5)
+                            obj_control.bosses_killed += mouse_check_press;
+                        
+                        if (i == 6)
+                            obj_control.rerolls += mouse_check_press;
+                        
+                        if (i == 7)
+                        {
+                            obj_control.blackhole += mouse_check_press;
+                            
+                            if (obj_control.blackhole > obj_control.blackholemax)
+                                obj_control.blackholemax += 1;
+                            
+                            if (obj_control.blackhole < obj_control.blackholemax)
+                                obj_control.blackholemax -= 1;
+                        }
+                        
+                        if (i == 8)
+                            obj_control.max_items += mouse_check_press;
+                        
+                        if (i == 9)
+                        {
+                            if (instance_exists(obj_enemy_parent))
+                            {
+                                with (obj_enemy_parent)
+                                    hp = 1;
+                            }
+                        }
+                        
+                        if (i == 10)
+                            obj_control.spawnenemies = !obj_control.spawnenemies;
+                        
+                        if (i == 11)
+                            obj_view.spawncap_cheat += mouse_check_press * 0.01;
+                        
+                        if (i == 12)
+                            obj_view.movespeed_cheat += mouse_check_press * 0.01;
+                        
+                        if (i == 13)
+                            obj_control.xp_mod += mouse_check_press * 0.01;
+                        
+                        if (i == 14)
+                            obj_view.levelupstop_cheat = !obj_view.levelupstop_cheat;
+                        
+                        if (i == 15)
+                            obj_control.fast_forward_mod += mouse_check_press * 0.02;
+                    }
+                    else
+                    {
+                        click_timer -= 1;
+                    }
+                }
+                else
+                {
+                    click_timer = 0;
+                    click_delay = 15;
+                }
+            }
+            
+            draw_sprite_ext(global.sprites.spr_freeplay_buttons, i, cheat_butt_x, cheat_butt_y, 1, 1, 0, c_white, clamp(image_alph * get_visual_alph, 0, 1));
+        }
+    }
+    
     draw_text_setup(65280, 0, 2, fnt_freddy);
     var first_num = 32;
     var add_num = 8;
