@@ -23,7 +23,8 @@ Finished steps are skipped; `--force` redoes them.
 | Folder | Committed | Contents |
 | --- | --- | --- |
 | `PicayuneDreams_extract/`           | no  | decompiled game code, never edited |
-| `PicayuneDreams_edited/`            | yes | only the `.gml` files we changed |
+| `PicayuneDreams_edited/`            | yes | only the `.gml` files we changed (any subfolder) |
+| `PicayuneDreams_new/`               | yes | `.gml` files that add new scripts, objects or events to the game |
 | `game_files/game/`                      | no  | whitelisted, unmodified copy of the game install |
 | `game_files_modded/`                    | no  | patched game output for testing |
 | `UndertaleModTool_v*/`, `UTMT_CLI_v*/`  | no  | UndertaleModTool GUI and CLI |

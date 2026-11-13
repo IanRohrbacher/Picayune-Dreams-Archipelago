@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 EXTRACT_DIR = ROOT / "PicayuneDreams_extract"
 EDIT_DIR = ROOT / "PicayuneDreams_edited"
+NEW_DIR = ROOT / "PicayuneDreams_new"
 GAME_FILES_DIR = ROOT / "game_files"
 LOG_DIR = ROOT / "logs"
 
@@ -48,11 +49,12 @@ GAME_FILE_WHITELIST = [
 ]
 
 
-def find_duplicates(edit_dir: Path) -> dict[str, list[Path]]:
-    """Maps each .gml file name used more than once under edit_dir (any depth, case-insensitive) to its paths."""
+def find_duplicates(*dirs: Path) -> dict[str, list[Path]]:
+    """Maps each .gml file name used more than once under dirs (any depth, case-insensitive) to its paths."""
     by_name: dict[str, list[Path]] = {}
-    for path in sorted(edit_dir.rglob("*.gml")):
-        by_name.setdefault(path.name.lower(), []).append(path)
+    for directory in dirs:
+        for path in sorted(directory.rglob("*.gml")):
+            by_name.setdefault(path.name.lower(), []).append(path)
     return {name: paths for name, paths in by_name.items() if len(paths) > 1}
 
 
