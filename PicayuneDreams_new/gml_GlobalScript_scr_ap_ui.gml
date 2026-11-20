@@ -607,7 +607,15 @@ function ap_ui_status()
 
     ap_ui_text(958, 10, status, status_color, fa_right);
     ap_ui_text(958 - string_width(status) - 6, 10, "Archipelago Status:", ap_ui_green(), fa_right);
+    ap_ui_text(958, 30, "Version: " + global.ap_version, ap_ui_green(), fa_right);
+    var next_y = 50;
+
+    if (global.ap_debug_tools)
+    {
+        ap_ui_text(958, next_y, "Debug Tools: Enabled", c_yellow, fa_right);
+        next_y += 20;
+    }
 
     if (global.ap_error != "" && global.ap_connect_state != 2 && global.ap_connect_state != 4)
-        ap_ui_text(958, 45, global.ap_error, c_red, fa_right);
+        ap_ui_text(958, next_y + 10, global.ap_error, c_red, fa_right);
 }
