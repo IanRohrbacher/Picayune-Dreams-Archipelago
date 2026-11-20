@@ -50,31 +50,29 @@ if (existing.Count > 0)
     return;
 }
 
-if (files.Length > 0)
+// New global scripts are compiled first, then the other new code, then the replacements, so that
+// every call to a function from a new script resolves to that function.
+void ImportGroup(string[] groupFiles, bool autoCreateAssets)
 {
-    UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
+    if (groupFiles.Length == 0)
+        return;
+
+    UndertaleModLib.Compiler.CodeImportGroup group = new(Data)
     {
-        AutoCreateAssets = false,
+        AutoCreateAssets = autoCreateAssets,
     };
-    foreach (string file in files)
+    foreach (string file in groupFiles)
     {
-        importGroup.QueueReplace(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file));
+        group.QueueReplace(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file));
     }
-    importGroup.Import();
+    group.Import();
 }
 
-if (newFiles.Length > 0)
-{
-    UndertaleModLib.Compiler.CodeImportGroup newGroup = new(Data)
-    {
-        AutoCreateAssets = true,
-    };
-    foreach (string file in newFiles)
-    {
-        newGroup.QueueReplace(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file));
-    }
-    newGroup.Import();
-}
+bool IsGlobalScript(string file) => Path.GetFileName(file).StartsWith("gml_GlobalScript_");
+
+ImportGroup(newFiles.Where(IsGlobalScript).ToArray(), true);
+ImportGroup(newFiles.Where(file => !IsGlobalScript(file)).ToArray(), true);
+ImportGroup(files, false);
 
 // lets the runner use absolute paths (program_directory) outside its AppData save area
 var options = UndertaleModLib.Models.UndertaleOptions.OptionsFlags.DisableSandbox;

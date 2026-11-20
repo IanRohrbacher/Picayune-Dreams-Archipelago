@@ -48,61 +48,29 @@ def test_copy_game_files_only_copies_whitelist(tmp_path, monkeypatch):
     copied = sorted(p.relative_to(dst).as_posix() for p in dst.rglob("*"))
     assert copied == ["data.win", "mods", "mods/my-mod", "mods/my-mod/main.gml"]
 
-
-REAL_SAVE = '[boss]\r\nx="1"\r\n[options]\r\nmusvol="0.2"\r\nkb_up="87"\r\n[stats]\r\ny="2"\r\n'
-BASELINE = '[stats]\r\nhas_beaten_game="0"\r\n[overdrive]\r\nz="0"\r\n'
-
-
-def test_extract_section_keeps_lines_up_to_next_header():
-    assert setup.extract_section(REAL_SAVE, "options") == '[options]\r\nmusvol="0.2"\r\nkb_up="87"\r\n'
-
-
-def test_extract_section_missing_returns_none():
-    assert setup.extract_section(REAL_SAVE, "nope") is None
-
-
-def test_build_save_template_puts_options_first():
-    options = setup.extract_section(REAL_SAVE, "options")
-
-    assert setup.build_save_template(BASELINE, options) == options + BASELINE
-    assert setup.build_save_template(BASELINE, None) == BASELINE
-
-
-@pytest.fixture
-def template_paths(tmp_path, monkeypatch):
-    baseline, template = tmp_path / "baseline.sav", tmp_path / "out" / "game.sav"
-    baseline.write_bytes(BASELINE.encode())
+def test_copy_user_save_copies_the_whole_folder(tmp_path, monkeypatch):
     monkeypatch.setattr(setup, "ROOT", tmp_path)
-    monkeypatch.setattr(setup, "SAVE_BASELINE", baseline)
-    monkeypatch.setattr(setup, "SAVE_TEMPLATE", template)
-    return template
+    src, dst = tmp_path / "appdata", tmp_path / "game_files" / "save"
+    (src / "slots").mkdir(parents=True)
+    (src / "game.sav").write_text("a")
+    (src / "slots" / "x.sav").write_text("b")
+
+    setup.copy_user_save(src, dst, force=False)
+
+    assert (dst / "game.sav").read_text() == "a"
+    assert (dst / "slots" / "x.sav").read_text() == "b"
 
 
-def test_create_save_template_adds_users_options(tmp_path, template_paths):
-    saves = tmp_path / "saves"
-    saves.mkdir()
-    (saves / "game.sav").write_bytes(REAL_SAVE.encode())
+def test_copy_user_save_skips_an_existing_copy_unless_forced(tmp_path, monkeypatch):
+    monkeypatch.setattr(setup, "ROOT", tmp_path)
+    src, dst = tmp_path / "appdata", tmp_path / "save"
+    src.mkdir()
+    dst.mkdir()
+    (src / "game.sav").write_text("new")
+    (dst / "game.sav").write_text("old")
 
-    setup.create_save_template(saves, force=False)
+    setup.copy_user_save(src, dst, force=False)
+    assert (dst / "game.sav").read_text() == "old"
 
-    text = template_paths.read_bytes().decode()
-    assert text.startswith('[options]\r\nmusvol="0.2"')
-    assert text.endswith(BASELINE)
-    assert "[boss]" not in text
-
-
-def test_create_save_template_without_a_save_uses_baseline(tmp_path, template_paths):
-    setup.create_save_template(tmp_path, force=False)
-
-    assert template_paths.read_bytes().decode() == BASELINE
-
-
-def test_create_save_template_skips_existing_unless_forced(tmp_path, template_paths):
-    template_paths.parent.mkdir()
-    template_paths.write_text("keep")
-
-    setup.create_save_template(tmp_path, force=False)
-    assert template_paths.read_text() == "keep"
-
-    setup.create_save_template(tmp_path, force=True)
-    assert template_paths.read_bytes().decode() == BASELINE
+    setup.copy_user_save(src, dst, force=True)
+    assert (dst / "game.sav").read_text() == "new"

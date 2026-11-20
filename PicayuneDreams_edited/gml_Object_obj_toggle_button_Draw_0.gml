@@ -36,7 +36,7 @@ if (instance_place(x, y, obj_mouse))
             playsnd(global.sounds.snd_opt_toggle_false, 1, 0, 1);
         }
         
-        ini_open(global.save);
+        ini_open(global.save_options);
         
         if (variable == "christmas")
             ini_write_real("other", "event", global.event);

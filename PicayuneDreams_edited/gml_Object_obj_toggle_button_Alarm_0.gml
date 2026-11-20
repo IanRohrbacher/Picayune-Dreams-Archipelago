@@ -1,4 +1,4 @@
-ini_open(global.save);
+ini_open(global.save_options);
 
 if (variable == "christmas")
 {

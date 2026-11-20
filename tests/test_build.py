@@ -18,7 +18,7 @@ def make_layout(tmp_path, monkeypatch, with_edited=True, with_new=True):
         "NEW_DIR": new,
         "MODDED_DIR": modded,
         "MODDED_SAVE_DIR": modded / "save",
-        "SAVE_TEMPLATE": tmp_path / "template" / "game.sav",
+        "USER_SAVE_DIR": tmp_path / "user_save",
     }
     for name, value in paths.items():
         monkeypatch.setattr(build, name, value)
@@ -42,8 +42,6 @@ def test_main_copies_game_files_then_imports(tmp_path, monkeypatch):
 def test_main_keeps_the_current_save_by_default(tmp_path, monkeypatch):
     _, _, modded = make_layout(tmp_path, monkeypatch)
     monkeypatch.setattr(build, "import_code", lambda *args: True)
-    build.SAVE_TEMPLATE.parent.mkdir()
-    build.SAVE_TEMPLATE.write_text("template")
     (modded / "save").mkdir(parents=True)
     (modded / "save" / "game.sav").write_text("mine")
 
@@ -52,24 +50,24 @@ def test_main_keeps_the_current_save_by_default(tmp_path, monkeypatch):
     assert (modded / "save" / "game.sav").read_text() == "mine"
 
 
-def test_main_fresh_save_replaces_the_save_with_the_template(tmp_path, monkeypatch):
+def test_main_fresh_save_deletes_the_whole_save_folder(tmp_path, monkeypatch):
     _, _, modded = make_layout(tmp_path, monkeypatch)
     monkeypatch.setattr(build, "import_code", lambda *args: True)
-    build.SAVE_TEMPLATE.parent.mkdir()
-    build.SAVE_TEMPLATE.write_text("template")
-    (modded / "save").mkdir(parents=True)
+    (modded / "save" / "slots").mkdir(parents=True)
     (modded / "save" / "game.sav").write_text("mine")
+    (modded / "save" / "slots" / "a.sav").write_text("slot")
 
     assert build.main(["--fresh-save"]) == 0
 
-    assert (modded / "save" / "game.sav").read_text() == "template"
+    assert not (modded / "save").exists()
+    assert (modded / "data.win").is_file()
 
 
-def test_main_fresh_save_needs_the_template(tmp_path, monkeypatch):
-    _, _, modded = make_layout(tmp_path, monkeypatch)
+def test_main_fresh_save_without_a_save_folder_still_builds(tmp_path, monkeypatch):
+    make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
 
-    assert build.main(["--fresh-save"]) == 1
-    assert not modded.exists()
+    assert build.main(["--fresh-save"]) == 0
 
 
 def test_find_duplicates_searches_subfolders_ignoring_case(tmp_path):
@@ -172,8 +170,60 @@ def test_main_propagates_import_failure(tmp_path, monkeypatch):
     assert build.main([]) == 1
 
 
+def test_rooms_are_added_before_code_is_imported_and_linked_after():
+    names = [script.name for script in build.BUILD_SCRIPTS]
+
+    assert names == ["add_rooms.csx", "import_code.csx", "link_room_code.csx"]
+    assert all(script.is_file() for script in build.BUILD_SCRIPTS)
+
+
+def test_import_code_passes_every_script_to_the_cli(tmp_path, monkeypatch):
+    (tmp_path / "UndertaleModCli.exe").write_bytes(b"")
+    monkeypatch.setattr(build, "ROOT", tmp_path)
+    monkeypatch.setattr(build, "UTMT_CLI_DIR", tmp_path)
+    calls = []
+    monkeypatch.setattr(build.subprocess, "run", lambda args, env: calls.append((args, env)) or build.subprocess.CompletedProcess(args, 0))
+
+    assert build.import_code(tmp_path / "data.win", tmp_path / "edited", tmp_path / "out.win") is True
+
+    args, env = calls[0]
+    scripts = [args[i + 1].name for i, arg in enumerate(args) if arg == "--scripts"]
+    assert scripts == ["add_rooms.csx", "import_code.csx", "link_room_code.csx"]
+    assert "PDA_NEW_DIR" not in env
+
+
 def test_import_code_needs_the_cli(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "ROOT", tmp_path)
     monkeypatch.setattr(build, "UTMT_CLI_DIR", tmp_path / "missing")
 
     assert build.import_code(tmp_path / "data.win", tmp_path / "edited", tmp_path / "out.win", tmp_path / "new") is False
+
+def test_transfer_options_replaces_only_the_options_section(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    build.USER_SAVE_DIR.mkdir()
+    (build.USER_SAVE_DIR / "game.sav").write_text('[stats]\nx="9"\n[options]\nmusvol="0.2"\n', newline="")
+    (modded / "save").mkdir(parents=True)
+    (modded / "save" / "game.sav").write_text('[options]\nmusvol="1"\n[stats]\nx="1"\n', newline="")
+
+    assert build.main(["--transfer-options"]) == 0
+
+    assert (modded / "save" / "game.sav").read_text() == '[options]\nmusvol="0.2"\n[stats]\nx="1"\n'
+
+
+def test_transfer_options_creates_the_save_when_there_is_none(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    build.USER_SAVE_DIR.mkdir()
+    (build.USER_SAVE_DIR / "game.sav").write_text('[options]\nmusvol="0.2"\n', newline="")
+
+    assert build.main(["--fresh-save", "--transfer-options"]) == 0
+
+    assert (modded / "save" / "game.sav").read_text() == '[options]\nmusvol="0.2"\n'
+
+
+def test_transfer_options_needs_the_copied_save(tmp_path, monkeypatch):
+    make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+
+    assert build.main(["--transfer-options"]) == 1
