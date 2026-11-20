@@ -6,7 +6,7 @@ surface_resize(application_surface, global.screenw, global.screenh);
 display_set_gui_size(global.screenw, global.screenh);
 display_reset(0, true);
 global.ap_debug_tools = true;
-global.ap_version = "AP 0.5.0";
+global.ap_version = "AP 0.5.1";
 global.save_dir = program_directory + "save/";
 if (!directory_exists(global.save_dir)) directory_create(global.save_dir);
 ap_log_begin();

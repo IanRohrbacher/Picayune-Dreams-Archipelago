@@ -9,7 +9,7 @@ function log(arg0 = "", arg1 = 0)
 
     var now = date_current_datetime();
     var stamp = string(date_get_year(now)) + "-" + ap_pad2(date_get_month(now)) + "-" + ap_pad2(date_get_day(now)) + " " + ap_pad2(date_get_hour(now)) + ":" + ap_pad2(date_get_minute(now)) + ":" + ap_pad2(date_get_second(now));
-    var file = file_text_open_append(program_directory + "ap_log.txt");
+    var file = file_text_open_append(program_directory + "ap_game_log.txt");
 
     if (file == -1)
         return;
