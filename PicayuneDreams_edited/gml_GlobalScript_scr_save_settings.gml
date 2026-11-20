@@ -1,5 +1,6 @@
 function scr_save_settings()
 {
+    log("save settings -> " + global.save_options);
     ini_open(global.save_options);
     ini_write_real("options", "musvol", global.musvol);
     ini_write_real("options", "sndvol", global.sndvol);

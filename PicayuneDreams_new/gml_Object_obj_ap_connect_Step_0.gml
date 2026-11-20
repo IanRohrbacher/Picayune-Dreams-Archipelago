@@ -73,6 +73,7 @@ if (state == "connecting")
         }
         else
         {
+            log("connect failed: " + global.ap_error, 1);
             state = "connect";
             focus_field(1);
         }

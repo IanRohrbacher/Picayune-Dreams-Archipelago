@@ -8,6 +8,7 @@ function ap_save_init()
 
     global.ap_slot_key = "default";
     global.save = ap_slot_path(global.ap_slot_key);
+    log("save init: options=" + global.save_options + ", slots=" + global.save_slots_dir + ", active=" + global.save);
 }
 
 function ap_slot_sanitize(text)
@@ -60,13 +61,17 @@ function ap_slot_exists(key)
 function ap_slot_delete(key)
 {
     if (ap_slot_exists(key))
+    {
+        log("slot delete: " + ap_slot_path(key));
         file_delete(ap_slot_path(key));
+    }
 }
 
 function ap_slot_select(key)
 {
     global.ap_slot_key = key;
     global.save = ap_slot_path(key);
+    log("slot select: " + key + " -> " + global.save);
     ap_profile_load();
 }
 
@@ -131,6 +136,7 @@ function ap_profile_save_meta()
 
 function ap_slot_write_meta()
 {
+    log("write slot meta: " + global.save);
     ini_open(global.save);
     ap_profile_save_meta();
     ini_close();
@@ -143,6 +149,7 @@ function ap_stats_keys()
 
 function ap_stats_set(key, value)
 {
+    log("stat " + key + " = " + string(value) + ((global.ap_slot_key == "default") ? " (default slot, not saved)" : ""));
     variable_struct_set(global.ap_stats, key, value);
 
     if (global.ap_slot_key != "default")
@@ -151,6 +158,9 @@ function ap_stats_set(key, value)
 
 function ap_profile_load()
 {
+    if (!file_exists(global.save))
+        log("profile load: " + global.save + " does not exist, using defaults", 1);
+
     ini_open(global.save);
     global.profile_level = ini_read_real("stats", "profile_level", 1);
     global.profile_xp = ini_read_real("stats", "profile_xp", 0);
@@ -190,6 +200,7 @@ function ap_profile_load()
         variable_struct_set(global.ap_stats, stat_keys[i], ini_read_real("archipelago", stat_keys[i], 0));
 
     ini_close();
+    log("profile load: " + global.save + " (level " + string(global.profile_level) + ", beaten " + string(global.has_beaten_game) + ", save name '" + global.ap_save_name + "')");
 
     if (instance_exists(obj_stat_track))
         instance_destroy(obj_stat_track);

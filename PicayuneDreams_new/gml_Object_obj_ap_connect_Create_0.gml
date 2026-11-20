@@ -133,6 +133,7 @@ play = function(index)
 
 finish = function()
 {
+    log("connect finished, selecting slot " + pending_key);
     ap_slot_select(pending_key);
     global.ap_save_name = fields[0];
     global.ap_host_name = fields[1];

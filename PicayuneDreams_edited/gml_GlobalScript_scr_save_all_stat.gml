@@ -1,5 +1,6 @@
 function scr_save_all_stat()
 {
+    log("save all stats -> " + global.save);
     ini_open(global.save);
     ini_write_real("stats", "has_beaten_game", global.has_beaten_game);
     ini_write_real("stats", "has_seen_bad_ending", global.has_seen_bad_ending);
