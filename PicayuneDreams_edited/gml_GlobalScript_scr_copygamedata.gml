@@ -129,68 +129,6 @@ function scr_saveallgamestats()
         if (mort >= 25 && od > obj_stat_track.stat_suit_elemental_overdrive)
             obj_stat_track.stat_suit_elemental_overdrive = od;
     }
-    
-    if (file_exists(global.save_dir + "backup20_"))
-        file_delete(global.save_dir + "backup20_");
-    
-    if (file_exists(global.save_dir + "backup19_"))
-        file_rename(global.save_dir + "backup19_", global.save_dir + "backup20_");
-    
-    if (file_exists(global.save_dir + "backup18_"))
-        file_rename(global.save_dir + "backup18_", global.save_dir + "backup19_");
-    
-    if (file_exists(global.save_dir + "backup17_"))
-        file_rename(global.save_dir + "backup17_", global.save_dir + "backup18_");
-    
-    if (file_exists(global.save_dir + "backup16_"))
-        file_rename(global.save_dir + "backup16_", global.save_dir + "backup17_");
-    
-    if (file_exists(global.save_dir + "backup15_"))
-        file_rename(global.save_dir + "backup15_", global.save_dir + "backup16_");
-    
-    if (file_exists(global.save_dir + "backup14_"))
-        file_rename(global.save_dir + "backup14_", global.save_dir + "backup15_");
-    
-    if (file_exists(global.save_dir + "backup13_"))
-        file_rename(global.save_dir + "backup13_", global.save_dir + "backup14_");
-    
-    if (file_exists(global.save_dir + "backup12_"))
-        file_rename(global.save_dir + "backup12_", global.save_dir + "backup13_");
-    
-    if (file_exists(global.save_dir + "backup11_"))
-        file_rename(global.save_dir + "backup11_", global.save_dir + "backup12_");
-    
-    if (file_exists(global.save_dir + "backup10_"))
-        file_rename(global.save_dir + "backup10_", global.save_dir + "backup11_");
-    
-    if (file_exists(global.save_dir + "backup9_"))
-        file_rename(global.save_dir + "backup9_", global.save_dir + "backup10_");
-    
-    if (file_exists(global.save_dir + "backup8_"))
-        file_rename(global.save_dir + "backup8_", global.save_dir + "backup9_");
-    
-    if (file_exists(global.save_dir + "backup7_"))
-        file_rename(global.save_dir + "backup7_", global.save_dir + "backup8_");
-    
-    if (file_exists(global.save_dir + "backup6_"))
-        file_rename(global.save_dir + "backup6_", global.save_dir + "backup7_");
-    
-    if (file_exists(global.save_dir + "backup5_"))
-        file_rename(global.save_dir + "backup5_", global.save_dir + "backup6_");
-    
-    if (file_exists(global.save_dir + "backup4_"))
-        file_rename(global.save_dir + "backup4_", global.save_dir + "backup5_");
-    
-    if (file_exists(global.save_dir + "backup3_"))
-        file_rename(global.save_dir + "backup3_", global.save_dir + "backup4_");
-    
-    if (file_exists(global.save_dir + "backup2_"))
-        file_rename(global.save_dir + "backup2_", global.save_dir + "backup3_");
-    
-    if (file_exists(global.save_dir + "backup1_"))
-        file_rename(global.save_dir + "backup1_", global.save_dir + "backup2_");
-    
-    file_copy(global.save, global.save_dir + "backup1_");
 }
 
 function scr_copygamedata()

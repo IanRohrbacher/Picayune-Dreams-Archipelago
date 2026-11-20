@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 EXTRACT_DIR = ROOT / "PicayuneDreams_extract"
 EDIT_DIR = ROOT / "PicayuneDreams_edited"
+NEW_DIR = ROOT / "PicayuneDreams_new"
 GAME_FILES_DIR = ROOT / "game_files"
 LOG_DIR = ROOT / "logs"
 
@@ -23,6 +24,10 @@ UTMT_CLI_DIR = ROOT / f"UTMT_CLI_v{UTMT_VERSION}-Windows"
 UTMT_CLI_URL = f"{_UTMT_RELEASE}/UTMT_CLI_v{UTMT_VERSION}-Windows.zip"
 EXPORT_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "export_code.csx"
 IMPORT_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "import_code.csx"
+ADD_ROOMS_SCRIPT = ROOT / "scripts" / "utmt" / "add_rooms.csx"
+LINK_ROOM_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "link_room_code.csx"
+# run in this order on the same loaded data.win: rooms first so new code can name them
+BUILD_SCRIPTS = [ADD_ROOMS_SCRIPT, IMPORT_CODE_SCRIPT, LINK_ROOM_CODE_SCRIPT]
 MODDED_DIR = ROOT / "game_files_modded"
 
 GAME_FOLDER_NAME = "Picayune Dreams"
@@ -31,11 +36,10 @@ GAME_FOLDER_NAME = "Picayune Dreams"
 STEAM_APP_ID = "2088840"
 SAVE_FOLDER_NAME = "PicayuneDreams"
 SAVE_FILE_NAME = "game.sav"
+# setup copies the user's whole save folder here; the real one is only ever read
+USER_SAVE_DIR = GAME_FILES_DIR / "save"
 # must match global.save_dir in PicayuneDreams_edited/gml_Object_obj_init_Create_0.gml
 MODDED_SAVE_DIR = MODDED_DIR / "save"
-# committed fresh profile (default values only); setup adds the user's [options] to it
-SAVE_BASELINE = ROOT / "scripts" / "save_baseline.sav"
-SAVE_TEMPLATE = GAME_FILES_DIR / "save_template" / SAVE_FILE_NAME
 
 # everything the game ships with; anything else in the install is left behind
 GAME_FILE_WHITELIST = [
@@ -48,11 +52,32 @@ GAME_FILE_WHITELIST = [
 ]
 
 
-def find_duplicates(edit_dir: Path) -> dict[str, list[Path]]:
-    """Maps each .gml file name used more than once under edit_dir (any depth, case-insensitive) to its paths."""
+def extract_section(text: str, name: str) -> str | None:
+    """Returns the INI section `name` (header line included, line endings kept), or None."""
+    lines = text.splitlines(keepends=True)
+    start = next((i for i, line in enumerate(lines) if line.strip() == f"[{name}]"), None)
+    if start is None:
+        return None
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[")), len(lines))
+    return "".join(lines[start:end])
+
+
+def replace_section(text: str, name: str, section: str) -> str:
+    """Replaces the INI section `name` in text with `section`, or puts it first when text has none."""
+    if not section.endswith("\n"):
+        section += "\r\n"
+    old = extract_section(text, name)
+    if old is None:
+        return section + text
+    return text.replace(old, section, 1)
+
+
+def find_duplicates(*dirs: Path) -> dict[str, list[Path]]:
+    """Maps each .gml file name used more than once under dirs (any depth, case-insensitive) to its paths."""
     by_name: dict[str, list[Path]] = {}
-    for path in sorted(edit_dir.rglob("*.gml")):
-        by_name.setdefault(path.name.lower(), []).append(path)
+    for directory in dirs:
+        for path in sorted(directory.rglob("*.gml")):
+            by_name.setdefault(path.name.lower(), []).append(path)
     return {name: paths for name, paths in by_name.items() if len(paths) > 1}
 
 

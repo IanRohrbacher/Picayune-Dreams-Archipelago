@@ -282,5 +282,6 @@ function scr_save_all_stat()
     ini_write_real("stat_track", "stat_suit_elemental_overdrive", stat_suit_elemental_overdrive);
     
     save_damage_stats();
+    ap_profile_save_meta();
     ini_close();
 }

@@ -50,7 +50,12 @@ if (!instance_exists(obj_settings))
                     instance_create_layer(global.screenh / 2, global.screenw / 2, "Instances", obj_settings);
                 
                 if (butt == "exit")
-                    game_end();
+                    if (global.ap_debug_tools) {
+                        ap_connect_cancel();
+                        var ftr = instance_create_depth(x, y, -99999999, obj_fadetoroom);
+                        ftr.rm = rm_ap_connect;
+                    } else 
+                        game_end();
             }
         }
     }

@@ -12,7 +12,7 @@ uv run scripts/setup.py
 `setup.py` asks for the game install and save folders (detected paths are offered; Enter accepts), then:
 
 1. copies the whitelisted game files into `game_files/game`
-2. creates the test save template `game_files/save_template/game.sav` (`scripts/save_baseline.sav` plus the `[options]` of your `game.sav`)
+2. copies your whole save folder into `game_files/save` (the real one is only read)
 3. downloads the UndertaleModTool GUI and CLI
 4. decompiles `game_files/game/data.win` into `PicayuneDreams_extract` and checks it against `scripts/extract.sha256`
 
@@ -23,7 +23,8 @@ Finished steps are skipped; `--force` redoes them.
 | Folder | Committed | Contents |
 | --- | --- | --- |
 | `PicayuneDreams_extract/`           | no  | decompiled game code, never edited |
-| `PicayuneDreams_edited/`            | yes | only the `.gml` files we changed |
+| `PicayuneDreams_edited/`            | yes | only the `.gml` files we changed (any subfolder) |
+| `PicayuneDreams_new/`               | yes | `.gml` files that add new scripts, objects or events to the game |
 | `game_files/game/`                      | no  | whitelisted, unmodified copy of the game install |
 | `game_files_modded/`                    | no  | patched game output for testing |
 | `UndertaleModTool_v*/`, `UTMT_CLI_v*/`  | no  | UndertaleModTool GUI and CLI |
@@ -45,7 +46,8 @@ uv run scripts/diff_edit.py "*skillpoint*" --print
 
 ```sh
 uv run scripts/build.py                      # game_files/game + PicayuneDreams_edited -> game_files_modded/
-uv run scripts/build.py --fresh-save         # also reset game_files_modded/save/game.sav from the template
+uv run scripts/build.py --fresh-save         # also delete game_files_modded/save/ (game starts from its defaults)
+uv run scripts/build.py --transfer-options   # also copy your [options] from game_files/save/game.sav, leaving other saves alone
 ```
 
 ## Tests

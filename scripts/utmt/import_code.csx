@@ -1,7 +1,10 @@
-// Replaces code entries with every .gml file under <PDA_IMPORT_DIR> (all subfolders).
-// scripts/build.py runs this through UndertaleModCli.
+// Imports code from .gml files (all subfolders). scripts/build.py runs this through UndertaleModCli.
 //
-// Each file name is the code entry name, so only existing entries are replaced.
+// Each file name is the code entry name.
+//   <PDA_IMPORT_DIR>  replaces existing code entries.
+//   <PDA_NEW_DIR>     (optional) adds new code entries and creates the objects, events and
+//                     scripts they belong to; every name must be absent from the game.
+// Also disables the runner's file-system sandbox.
 
 using System;
 using System.IO;
@@ -16,10 +19,14 @@ if (string.IsNullOrEmpty(codeFolder))
     return;
 }
 
+string newFolder = Environment.GetEnvironmentVariable("PDA_NEW_DIR");
 string[] files = Directory.GetFiles(codeFolder, "*.gml", SearchOption.AllDirectories);
-if (files.Length == 0)
+string[] newFiles = !string.IsNullOrEmpty(newFolder) && Directory.Exists(newFolder)
+    ? Directory.GetFiles(newFolder, "*.gml", SearchOption.AllDirectories)
+    : new string[0];
+if (files.Length == 0 && newFiles.Length == 0)
 {
-    ScriptError("No .gml files in " + codeFolder);
+    ScriptError("No .gml files in " + codeFolder + (string.IsNullOrEmpty(newFolder) ? "" : " or " + newFolder));
     return;
 }
 
@@ -33,19 +40,43 @@ if (missing.Count > 0)
     return;
 }
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
+var existing = newFiles
+    .Select(Path.GetFileNameWithoutExtension)
+    .Where(name => Data.Code.ByName(name) is not null)
+    .ToList();
+if (existing.Count > 0)
 {
-    AutoCreateAssets = false,
-};
-foreach (string file in files)
-{
-    importGroup.QueueReplace(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file));
+    ScriptError("Already a code entry in the game (edit it in the edited folder instead): " + string.Join(", ", existing));
+    return;
 }
-importGroup.Import();
+
+// New global scripts are compiled first, then the other new code, then the replacements, so that
+// every call to a function from a new script resolves to that function.
+void ImportGroup(string[] groupFiles, bool autoCreateAssets)
+{
+    if (groupFiles.Length == 0)
+        return;
+
+    UndertaleModLib.Compiler.CodeImportGroup group = new(Data)
+    {
+        AutoCreateAssets = autoCreateAssets,
+    };
+    foreach (string file in groupFiles)
+    {
+        group.QueueReplace(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file));
+    }
+    group.Import();
+}
+
+bool IsGlobalScript(string file) => Path.GetFileName(file).StartsWith("gml_GlobalScript_");
+
+ImportGroup(newFiles.Where(IsGlobalScript).ToArray(), true);
+ImportGroup(newFiles.Where(file => !IsGlobalScript(file)).ToArray(), true);
+ImportGroup(files, false);
 
 // lets the runner use absolute paths (program_directory) outside its AppData save area
 var options = UndertaleModLib.Models.UndertaleOptions.OptionsFlags.DisableSandbox;
 Data.Options.Info |= options;
 Console.WriteLine("file system sandbox: disabled");
 
-Console.WriteLine($"imported {files.Length} code entries from {codeFolder}");
+Console.WriteLine($"replaced {files.Length} code entries, added {newFiles.Length}");
