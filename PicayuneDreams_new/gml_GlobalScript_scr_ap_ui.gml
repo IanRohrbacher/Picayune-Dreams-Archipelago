@@ -556,6 +556,39 @@ function ap_ui_field(x1, y1, x2, y2, text, focused, masked, edit)
 
     return clicked;
 }
+
+function ap_ui_status_info()
+{
+    if (global.ap_connect_state == 2)
+        return ["Connected", c_lime];
+
+    if (global.ap_connect_state == 4)
+        return ["Debug Bypass", c_yellow];
+
+    return ["Not Connected", c_red];
+}
+
+function ap_ui_status_line(x, y)
+{
+    var old_font = draw_get_font();
+    var old_halign = draw_get_halign();
+    var old_valign = draw_get_valign();
+    var old_color = draw_get_color();
+    var old_alpha = draw_get_alpha();
+    var info = ap_ui_status_info();
+    draw_set_font(fnt_freddy);
+    draw_set_alpha(1);
+    var label = "Archipelago Status: ";
+    var start_x = x - string_width(label) - string_width(info[0]);
+    ap_ui_text(start_x, y, label, ap_ui_green(), fa_left);
+    ap_ui_text(start_x + string_width(label), y, info[0], info[1], fa_left);
+    draw_set_font(old_font);
+    draw_set_halign(old_halign);
+    draw_set_valign(old_valign);
+    draw_set_color(old_color);
+    draw_set_alpha(old_alpha);
+}
+
 function ap_ui_status()
 {
     var status = "Not Connected";

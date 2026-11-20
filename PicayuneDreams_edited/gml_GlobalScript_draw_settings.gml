@@ -476,6 +476,12 @@ function draw_settings()
                 noshow = true;
             }
         }
+        else if (obj_settings.selected == "ARCHIPELAGO")
+        {
+            bar_power = -1;
+            txt = "";
+            noshow = true;
+        }
         
         if (bar_power == -1)
             long_butt_spr = global.sprites.spr_sett_long_butt_save;
@@ -897,7 +903,9 @@ function draw_settings()
         }
     }
     
-    for (var i = 0; i < 4; i += 1)
+    var tab_w = (var_Screenw - 2) / 5;
+    
+    for (var i = 0; i < 5; i += 1)
     {
         var tex_alpha = 0;
         
@@ -909,13 +917,15 @@ function draw_settings()
             txt = "KEYBOARD";
         else if (i == 3)
             txt = "CONTROLLER";
+        else if (i == 4)
+            txt = "ARCHIPELAGO";
         
         if (obj_settings.selected == txt)
             tex_alpha = 1;
         else
             tex_alpha = 0.35;
         
-        if (obj_settings.bar_clicked == false && collision_rectangle(var_Camx + 1 + (top_butt_width * i), var_Camy + 2, (var_Camx + 1 + (top_butt_width * i) + (top_butt_h_width * 2)) - 2, var_Camy + 2 + (top_butt_h_height * 2), obj_mouse, false, false))
+        if (obj_settings.bar_clicked == false && collision_rectangle(var_Camx + 1 + (tab_w * i), var_Camy + 2, (var_Camx + 1 + (tab_w * i) + tab_w) - 2, var_Camy + 2 + (top_butt_h_height * 2), obj_mouse, false, false))
         {
             tex_alpha = 0.75;
             
@@ -932,9 +942,9 @@ function draw_settings()
             }
         }
         
-        draw_sprite_ext(top_butt_spr, 0, 1 + (top_butt_width * i) + top_butt_h_width, 2 + top_butt_h_height, 1, 1, 0, c_white, 1);
+        draw_sprite_ext(top_butt_spr, 0, 1 + (tab_w * i) + (tab_w / 2), 2 + top_butt_h_height, tab_w / top_butt_width, 1, 0, c_white, 1);
         draw_set_alpha(tex_alpha);
-        draw_text(1 + (top_butt_width * i) + top_butt_h_width, 2 + top_butt_h_height, txt);
+        draw_text(1 + (tab_w * i) + (tab_w / 2), 2 + top_butt_h_height, txt);
         draw_set_alpha(1);
     }
     
@@ -968,6 +978,7 @@ function draw_settings()
     }
     
     draw_sprite_ext(global.sprites.spr_sett_finished, 0, var_Screenw - finished_butt_h_width - 1, var_Screenh - finished_butt_h_height - 1, 1, 1, 0, c_white, finished_hover_alph);
+    ap_ui_status_line(var_Screenw - finished_butt_width - 14, var_Screenh - finished_butt_h_height - 1);
     var reset_spr = global.sprites.spr_sett_reset_butt;
     var reset_butt_width = sprite_get_width(reset_spr);
     var reset_butt_height = sprite_get_height(reset_spr);
