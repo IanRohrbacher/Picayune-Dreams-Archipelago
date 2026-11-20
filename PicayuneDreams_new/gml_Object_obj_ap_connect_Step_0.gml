@@ -6,25 +6,51 @@ if (instance_exists(obj_settings))
 
 if (state == "list")
 {
-    var max_scroll = max(0, array_length(infos) + 1 - 3);
-    scroll = clamp(scroll + mouse_wheel_down() - mouse_wheel_up(), 0, max_scroll);
+    var limit = scroll_limit();
+    scroll_target += (mouse_wheel_down() - mouse_wheel_up()) * 60;
+
+    if (ap_ui_repeat(key_timers, vk_down))
+        scroll_target += 40;
+
+    if (ap_ui_repeat(key_timers, vk_up))
+        scroll_target -= 40;
+
+    if (keyboard_check_pressed(vk_pagedown))
+        scroll_target += 300;
+
+    if (keyboard_check_pressed(vk_pageup))
+        scroll_target -= 300;
+
+    if (keyboard_check_pressed(vk_home))
+        scroll_target = 0;
+
+    if (keyboard_check_pressed(vk_end))
+        scroll_target = limit;
+
+    scroll_target = clamp(scroll_target, 0, limit);
+
+    if (dragging)
+    {
+        scroll_px = scroll_target;
+    }
+    else
+    {
+        scroll_px += (scroll_target - scroll_px) * 0.25;
+
+        if (abs(scroll_target - scroll_px) < 0.5)
+            scroll_px = scroll_target;
+    }
 }
 
 if (focus >= 0)
 {
-    if (keyboard_check(vk_control) && keyboard_check_pressed(ord("V")))
-        keyboard_string += clipboard_get_text();
-
-    var text = string_replace_all(string_copy(keyboard_string, 1, max_length), chr(9), "");
-
-    if (focus == 2)
-        text = string_digits(text);
-
-    fields[focus] = text;
-    keyboard_string = text;
+    fields[focus] = ap_ui_edit(edit, fields[focus], max_length, focus == 2, key_timers);
 
     if (keyboard_check_pressed(vk_tab) && state == "connect")
+    {
         focus_field(focus >= 4 ? 1 : focus + 1);
+        edit.anchor = 0;
+    }
 
     if (keyboard_check_pressed(vk_enter))
     {

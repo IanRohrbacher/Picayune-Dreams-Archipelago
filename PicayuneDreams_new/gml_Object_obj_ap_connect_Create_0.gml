@@ -6,7 +6,16 @@ max_length = 64;
 state = "list";
 fields = ["", "archipelago.gg", "38281", "", ""];
 focus = -1;
-scroll = 0;
+edit = { caret: 0, anchor: 0, ofs: 0, dragging: false, click_time: -1000, click_index: -1, kind: "", undo: [], redo: [] };
+key_timers = {};
+scroll_px = 0;
+scroll_target = 0;
+dragging = false;
+drag_offset = 0;
+list_surface = -1;
+global.ap_ui_captured = false;
+global.ap_ui_clip_y1 = -100000;
+global.ap_ui_clip_y2 = 100000;
 delete_armed = "";
 pending_key = "";
 editing = false;
@@ -14,17 +23,47 @@ connecting_timer = 0;
 slots = [];
 infos = [];
 
+card_h = 116;
+card_gap = 8;
+card_pitch = card_h + card_gap;
+
+scroll_limit = function()
+{
+    return max(0, ((array_length(infos) + 1) * card_pitch) - card_gap - 356);
+};
+
 refresh = function()
 {
     slots = ap_slot_list();
     infos = ap_slot_infos(slots);
-    scroll = clamp(scroll, 0, max(0, array_length(infos) + 1 - 3));
+    scroll_target = clamp(scroll_target, 0, scroll_limit());
+    scroll_px = clamp(scroll_px, 0, scroll_limit());
 };
 
 focus_field = function(index)
 {
     focus = index;
-    keyboard_string = (index >= 0) ? fields[index] : "";
+    edit.caret = (index >= 0) ? string_length(fields[index]) : 0;
+    edit.anchor = edit.caret;
+    edit.ofs = 0;
+    edit.dragging = false;
+    edit.kind = "";
+    edit.undo = [];
+    edit.redo = [];
+    keyboard_string = "";
+};
+
+click_field = function(index)
+{
+    if (focus != index)
+    {
+        edit.kind = "";
+        edit.undo = [];
+        edit.redo = [];
+    }
+
+    focus = index;
+    keyboard_string = "";
 };
 
 fail = function(message)
