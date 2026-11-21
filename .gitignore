@@ -22,4 +22,5 @@ __pycache__/
 
 # gm-apclientpp release DLL copied here by hand; setup.py downloads the one the build uses
 gm-apclientpp-win64/
+.pytest_cache/
 
