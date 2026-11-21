@@ -4,6 +4,7 @@ if (instance_exists(obj_settings))
     exit;
 }
 
+// Wheel, arrows, PageUp/PageDown, Home and End move the scroll target; the view eases toward it unless the thumb is dragged.
 if (state == "list")
 {
     var limit = scroll_limit();
@@ -42,6 +43,7 @@ if (state == "list")
     }
 }
 
+// All key handling for the focused text box is in ap_ui_edit.
 if (focus >= 0)
 {
     fields[focus] = ap_ui_edit(edit, fields[focus], max_length, focus == 2, key_timers);
@@ -61,6 +63,7 @@ if (focus >= 0)
     }
 }
 
+// After a short pause, finish on success or return to the form on failure.
 if (state == "connecting")
 {
     connecting_timer += 1;

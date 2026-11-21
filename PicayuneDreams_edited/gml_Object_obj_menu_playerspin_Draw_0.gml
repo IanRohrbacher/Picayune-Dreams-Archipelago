@@ -6,6 +6,7 @@ var mod_count = struct_names_count(global.mods);
 if (mod_count > 0)
     draw_text(global.screenw - 37, global.screenh - 20, "MODS: " + string(mod_count));
 
+// Banner shown while dev tools are on; the version line below also shows the Archipelago version.
 if (global.ap_debug_tools)
 {
     var rain = c_rainbow(get_timer() / 10000);

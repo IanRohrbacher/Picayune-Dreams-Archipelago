@@ -1,3 +1,4 @@
+// The seasonal event toggle is an option, so it is stored in game.sav.
 ini_open(global.save_options);
 
 if (variable == "christmas")

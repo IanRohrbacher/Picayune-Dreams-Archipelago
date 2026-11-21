@@ -1,5 +1,6 @@
 function scr_finishing_the_run()
 {
+    // Finishing a run always counts; there are no daily or monthly runs to report.
     obj_stat_track.stat_runs_completed += 1;
     
     if (obj_stat_track.overdrive == obj_stat_track.overdrive_max)

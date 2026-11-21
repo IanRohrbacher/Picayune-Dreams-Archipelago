@@ -1,5 +1,6 @@
 function beat_the_run_achievements()
 {
+    // The checks run in every run; there is no freeplay mode that skips them.
     if (ds_list_find_index(obj_player.equipped_items, obj_control.item_slimespike) != -1 && ds_list_find_index(obj_player.equipped_items, obj_control.item_chainbelt) != -1 && ds_list_find_index(obj_player.equipped_items, obj_control.item_legsaw) != -1 && ds_list_find_index(obj_player.equipped_items, obj_control.item_hydro) != -1)
         attempt_to_unlock_achievement("Mob_Grinder");
     

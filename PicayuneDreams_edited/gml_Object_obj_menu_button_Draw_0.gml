@@ -49,6 +49,7 @@ if (!instance_exists(obj_settings))
                 if (butt == "config")
                     instance_create_layer(global.screenh / 2, global.screenw / 2, "Instances", obj_settings);
                 
+                // Exit returns to the slot screen in debug mode and quits the game otherwise.
                 if (butt == "exit")
                     if (global.ap_debug_tools) {
                         ap_connect_cancel();

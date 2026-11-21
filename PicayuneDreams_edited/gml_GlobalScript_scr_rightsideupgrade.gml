@@ -131,6 +131,7 @@ function scr_rightsideupgrade(arg0)
         upgrade_hover_preview_index = approach(upgrade_hover_preview_index, sprite_get_number(upgrade_hover_preview_sprite) - 1, 0.25);
     }
     
+    // The cheat panel is available only in debug mode.
     if (global.debug == true)
     {
         var gap_between = 17;

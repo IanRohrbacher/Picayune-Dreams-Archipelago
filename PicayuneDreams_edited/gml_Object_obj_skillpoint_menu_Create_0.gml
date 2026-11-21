@@ -19,6 +19,7 @@ yscale = 1;
 angl = 0;
 alph = 1;
 prestige_prog = 0;
+// The selected loadout is read from the active slot.
 ini_open(global.save);
 current_loadout = ini_read_real("stats", "loadout", 1);
 ini_close();

@@ -1,1 +1,3 @@
-// download scores from steam
+// Steam leaderboards are not supported by this Archipelago build.
+// The event only logs unintended calls.
+ap_log_once("unused: obj_menu_button Alarm 1 ran");

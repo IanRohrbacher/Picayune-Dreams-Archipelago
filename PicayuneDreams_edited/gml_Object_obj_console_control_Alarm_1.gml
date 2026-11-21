@@ -209,6 +209,7 @@ else if (init_num == 38)
 }
 else if (init_num == 39)
 {
+    // Run totals are always added to the stats.
     obj_stat_track.stat_total_kills += global.ds_enemieskilled;
     obj_stat_track.stat_upgrades_chosen += global.ds_upgrades;
     obj_stat_track.stat_total_xp += global.ds_xpearned;

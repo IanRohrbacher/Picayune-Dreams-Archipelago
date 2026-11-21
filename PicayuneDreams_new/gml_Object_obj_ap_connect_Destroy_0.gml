@@ -1,3 +1,4 @@
+// Frees the surface and clears the hover limits.
 if (surface_exists(list_surface))
     surface_free(list_surface);
 

@@ -1,5 +1,6 @@
 show_debug_message("SET UP BUTTS!");
 
+// Only the buttons that remain are set up; the daily, monthly and database buttons are gone.
 if (butt == "start")
 {
     idlespr = global.sprites.spr_butt_start_idle;

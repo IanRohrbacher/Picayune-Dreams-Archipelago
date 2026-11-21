@@ -1,3 +1,4 @@
+// Sets the shared options file (game.sav) and the active slot file; the slot is 'default' until one is picked.
 function ap_save_init()
 {
     global.save_options = global.save_dir + "game.sav";
@@ -11,6 +12,7 @@ function ap_save_init()
     log("save init: options=" + global.save_options + ", slots=" + global.save_slots_dir + ", active=" + global.save);
 }
 
+// Makes text safe as a file name: every character except letters, digits, '-' and '_' becomes '_'.
 function ap_slot_sanitize(text)
 {
     var result = "";
@@ -28,6 +30,7 @@ function ap_slot_sanitize(text)
     return result;
 }
 
+// File name stem built from connection details; the connect screen keys slots by save name instead.
 function ap_slot_key(host, port, slot)
 {
     return ap_slot_sanitize(host) + "_" + ap_slot_sanitize(string(port)) + "_" + ap_slot_sanitize(slot);
@@ -38,6 +41,7 @@ function ap_slot_path(key)
     return global.save_slots_dir + key + ".sav";
 }
 
+// Keys of every saved slot, found by scanning slots/*.sav.
 function ap_slot_list()
 {
     var keys = [];
@@ -58,6 +62,7 @@ function ap_slot_exists(key)
     return file_exists(ap_slot_path(key));
 }
 
+// Deletes a slot's save file; its progress is lost.
 function ap_slot_delete(key)
 {
     if (ap_slot_exists(key))
@@ -67,6 +72,7 @@ function ap_slot_delete(key)
     }
 }
 
+// Makes a slot the active save, then reloads the progress globals and stat tracker from it.
 function ap_slot_select(key)
 {
     global.ap_slot_key = key;
@@ -75,6 +81,7 @@ function ap_slot_select(key)
     ap_profile_load();
 }
 
+// Reads what the slot list shows for one slot: save name, connection details, stats and last saved time.
 function ap_slot_info(key)
 {
     ini_open(ap_slot_path(key));
@@ -114,12 +121,14 @@ function ap_pad2(value)
     return (value < 10 ? "0" : "") + string(value);
 }
 
+// Date and time as DD-MM-YYYY HH:MM, for the slot list.
 function ap_timestamp()
 {
     var now = date_current_datetime();
     return ap_pad2(date_get_day(now)) + "-" + ap_pad2(date_get_month(now)) + "-" + string(date_get_year(now)) + " " + ap_pad2(date_get_hour(now)) + ":" + ap_pad2(date_get_minute(now));
 }
 
+// Writes the [archipelago] section of the active slot; call it between ini_open and ini_close.
 function ap_profile_save_meta()
 {
     ini_write_string("archipelago", "save_name", global.ap_save_name);
@@ -134,6 +143,7 @@ function ap_profile_save_meta()
         ini_write_real("archipelago", keys[i], variable_struct_get(global.ap_stats, keys[i]));
 }
 
+// Saves the [archipelago] section on its own, outside a full progress save.
 function ap_slot_write_meta()
 {
     log("write slot meta: " + global.save);
@@ -142,11 +152,13 @@ function ap_slot_write_meta()
     ini_close();
 }
 
+// Names of the stats the Archipelago client keeps up to date and the slot list shows.
 function ap_stats_keys()
 {
     return ["player_count", "locations_checked", "locations_total", "items_received", "items_total", "goal_progress", "goal_total"];
 }
 
+// Called by the client to update one stat. It saves at once so the slot list stays current; the default slot is never written.
 function ap_stats_set(key, value)
 {
     log("stat " + key + " = " + string(value) + ((global.ap_slot_key == "default") ? " (default slot, not saved)" : ""));
@@ -156,6 +168,7 @@ function ap_stats_set(key, value)
         ap_slot_write_meta();
 }
 
+// Loads the active slot's progress into the game globals and recreates obj_stat_track so it rereads the slot.
 function ap_profile_load()
 {
     if (!file_exists(global.save))

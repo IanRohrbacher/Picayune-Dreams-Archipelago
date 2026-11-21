@@ -27,6 +27,7 @@ if (st == "list")
 
     ap_ui_backdrop(180, 90, 756, 450, 0.3);
 
+    // The cards are drawn into a double-resolution surface so they are cut at the frame; hover only works on the visible rows.
     if (!surface_exists(list_surface))
         list_surface = surface_create(view_w * 2, view_h * 2);
 
@@ -80,6 +81,7 @@ if (st == "list")
 
     var thumb_h = 356;
     var thumb_y = 92;
+    // Scrollbar: drag the thumb, or click the track to page.
     ap_ui_panel(762, 92, 782, 448, 0.5, ap_ui_dim());
 
     if (limit > 0)

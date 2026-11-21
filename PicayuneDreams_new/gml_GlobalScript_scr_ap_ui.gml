@@ -1,3 +1,4 @@
+// True when the mouse is over the rectangle. False during a drag (global.ap_ui_captured) and outside the rows between global.ap_ui_clip_y1 and y2.
 function ap_ui_hover(x1, y1, x2, y2)
 {
     var my = device_mouse_y_to_gui(0);
@@ -19,6 +20,7 @@ function ap_ui_trim(text)
     return text;
 }
 
+// Drops control characters (tab, return, Ctrl+key codes) from typed or pasted text.
 function ap_ui_clean(text)
 {
     var result = "";
@@ -34,6 +36,7 @@ function ap_ui_clean(text)
     return result;
 }
 
+// True when the key goes down, then every 3 frames once held for 18; timers is a struct of hold times.
 function ap_ui_repeat(timers, key)
 {
     var name = string(key);
@@ -55,11 +58,13 @@ function ap_ui_repeat(timers, key)
     return false;
 }
 
+// Letters, digits and _ are word characters.
 function ap_ui_word_char(ch)
 {
     return string_letters(ch) != "" || string_digits(ch) != "" || ch == "_";
 }
 
+// Start of the word before pos (Ctrl+Left, Ctrl+Backspace).
 function ap_ui_word_left(text, pos)
 {
     while (pos > 0 && !ap_ui_word_char(string_char_at(text, pos)))
@@ -71,6 +76,7 @@ function ap_ui_word_left(text, pos)
     return pos;
 }
 
+// Start of the next word after pos (Ctrl+Right, Ctrl+Delete).
 function ap_ui_word_right(text, pos)
 {
     var length = string_length(text);
@@ -84,6 +90,7 @@ function ap_ui_word_right(text, pos)
     return pos;
 }
 
+// Saves an undo snapshot; typing, Backspace and Delete in a row share one.
 function ap_ui_edit_push(edit, text, kind)
 {
     if (kind == "other" || edit.kind != kind)
@@ -99,6 +106,7 @@ function ap_ui_edit_push(edit, text, kind)
     edit.kind = kind;
 }
 
+// Ctrl+Z: restores the last snapshot.
 function ap_ui_edit_undo(edit, text)
 {
     if (array_length(edit.undo) == 0)
@@ -112,6 +120,7 @@ function ap_ui_edit_undo(edit, text)
     return snap.text;
 }
 
+// Ctrl+Y: re-applies the change that was undone.
 function ap_ui_edit_redo(edit, text)
 {
     if (array_length(edit.redo) == 0)
@@ -125,6 +134,8 @@ function ap_ui_edit_redo(edit, text)
     return snap.text;
 }
 
+// Applies this frame's keys to text and returns the new text. edit holds the caret, the selection anchor and the undo and redo history.
+// Keys: typing, Ctrl+A/C/X/V/Z/Y, Backspace, Delete, arrows, Home, End; Shift selects and Ctrl works on whole words.
 function ap_ui_edit(edit, text, max_length, digits_only, timers)
 {
     var length = string_length(text);
@@ -274,6 +285,7 @@ function ap_ui_edit(edit, text, max_length, digits_only, timers)
     return text;
 }
 
+// Caret position nearest to mouse x, measured from the left edge of the text.
 function ap_ui_index_at(shown, ofs, mx)
 {
     var best = ofs;
@@ -292,6 +304,7 @@ function ap_ui_index_at(shown, ofs, mx)
 
     return best;
 }
+// Credits-screen greens: green for text and borders, dim for secondary parts.
 function ap_ui_green()
 {
     return make_color_rgb(0, 176, 0);
@@ -311,6 +324,7 @@ function ap_ui_backdrop(x1, y1, x2, y2, alpha)
     draw_set_color(c_white);
 }
 
+// Draws one piece of the panel sprite, keeping only rows cy1..cy2. ys == 1 is real pixels; otherwise a one-row strip stretched to ys rows.
 function ap_ui_part(spr, sx, sy, sw, sh, dx, dy, xs, ys, alpha, cy1, cy2)
 {
     var dh = sh * ys;
@@ -326,6 +340,7 @@ function ap_ui_part(spr, sx, sy, sw, sh, dx, dy, xs, ys, alpha, cy1, cy2)
         draw_sprite_part_ext(spr, 0, sx, sy, sw, sh, dx, dy + top_cut, xs, ys - top_cut - bottom_cut, c_white, alpha);
 }
 
+// Draws a box from the credits panel sprite: its corners, edges and side stripes are kept and only the middle is stretched.
 function ap_ui_nine_clipped(x1, y1, x2, y2, alpha, cy1, cy2)
 {
     var spr = global.sprites.spr_credits_box;
@@ -361,6 +376,7 @@ function ap_ui_nine(x1, y1, x2, y2, alpha)
     ap_ui_nine_clipped(x1, y1, x2, y2, alpha, y1, y2);
 }
 
+// Only the two-line border of the credits panel, without the fill.
 function ap_ui_border(x1, y1, x2, y2)
 {
     draw_set_color(make_color_rgb(18, 255, 0));
@@ -370,6 +386,7 @@ function ap_ui_border(x1, y1, x2, y2)
     draw_set_color(c_white);
 }
 
+// A box from the panel sprite; a lime border colour adds a hover tint.
 function ap_ui_panel(x1, y1, x2, y2, alpha, border)
 {
     ap_ui_nine(x1, y1, x2, y2, alpha);
@@ -384,6 +401,7 @@ function ap_ui_panel(x1, y1, x2, y2, alpha, border)
     }
 }
 
+// Draws text vertically centred on y, then restores the alignment and colour.
 function ap_ui_text(x, y, text, color, halign)
 {
     draw_set_halign(halign);
@@ -395,6 +413,7 @@ function ap_ui_text(x, y, text, color, halign)
     draw_set_color(c_white);
 }
 
+// Large underlined heading (text at 2x) in the credits style.
 function ap_ui_heading(x, y, text)
 {
     var width = string_width(text) * 2;
@@ -408,6 +427,7 @@ function ap_ui_heading(x, y, text)
     draw_set_color(c_white);
 }
 
+// Draws a button and returns true on the frame it is clicked. base >= 100 is a primary button, lower is dimmed.
 function ap_ui_button(x1, y1, x2, y2, label, base)
 {
     var hover = ap_ui_hover(x1, y1, x2, y2);
@@ -417,6 +437,8 @@ function ap_ui_button(x1, y1, x2, y2, label, base)
     return hover && mouse_check_button_pressed(mb_left);
 }
 
+// A text box; edit is shared by the focused box (caret, anchor, ofs = first character shown).
+// Click sets the caret, Shift+click or dragging selects, double-click selects a word. Returns true when clicked.
 function ap_ui_field(x1, y1, x2, y2, text, focused, masked, edit)
 {
     var hover = ap_ui_hover(x1, y1, x2, y2);
@@ -557,6 +579,7 @@ function ap_ui_field(x1, y1, x2, y2, text, focused, masked, edit)
     return clicked;
 }
 
+// Connection status text and colour as [text, colour].
 function ap_ui_status_info()
 {
     if (global.ap_connect_state == 2)
@@ -568,6 +591,7 @@ function ap_ui_status_info()
     return ["Not Connected", c_red];
 }
 
+// 'Archipelago Status: ...' ending at x and centred on y; the caller's drawing state is kept.
 function ap_ui_status_line(x, y)
 {
     var old_font = draw_get_font();
@@ -589,6 +613,7 @@ function ap_ui_status_line(x, y)
     draw_set_alpha(old_alpha);
 }
 
+// Top-right header of the connect room: status, version, debug flag and the last error.
 function ap_ui_status()
 {
     var status = "Not Connected";

@@ -143,6 +143,7 @@ steam_update();
 
 if (steam_is_screenshot_requested())
 {
+    // Screenshots are saved in the save folder.
     var file = global.save_dir + "PICAYUNE_DREAMS_" + string(date_get_second(date_current_datetime())) + string(global.day) + string(global.month) + string(global.year) + string(irandom(999999)) + ".png";
     screen_save(file);
     steam_send_screenshot(file, window_get_width(), window_get_height());

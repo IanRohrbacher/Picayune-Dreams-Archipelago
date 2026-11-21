@@ -30,6 +30,7 @@ if (instance_place(x, y, obj_mouse))
             screenshake(10, 10);
             image_xscale = 0.25;
             image_yscale = 0.25;
+            // Loadout files are kept in the save folder, shared by every slot.
             file_delete(global.save_dir + "loadout" + string(obj_skillpoint_menu.current_loadout));
             ini_open(global.save_dir + "loadout" + string(obj_skillpoint_menu.current_loadout));
             var skillc = instance_number(obj_skillpoint) + 1;
@@ -94,6 +95,7 @@ if (instance_place(x, y, obj_mouse))
             var lvl_up_eff = instance_create_depth(global.screenw / 2, global.screenh / 2, -9999, obj_anim_delete);
             lvl_up_eff.sprite_index = global.sprites.spr_screen_upgrade_grid;
             obj_skillpoint_menu.current_loadout = loadout_num;
+            // The selected loadout is progress data, so it is stored in the active slot.
             ini_open(global.save);
             ini_write_real("stats", "loadout", obj_skillpoint_menu.current_loadout);
             ini_close();

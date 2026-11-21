@@ -180,6 +180,7 @@ function load_damage_stats()
 
 function save_damage_stats()
 {
+    // Damage stats are always saved; there is no freeplay mode that skips them.
     ini_write_real("stat_track", "stat_damage_unsorted", stat_damage_unsorted);
     ini_write_real("stat_track", "stat_damage_core", stat_damage_core);
     ini_write_real("stat_track", "stat_damage_chainbelt", stat_damage_chainbelt);

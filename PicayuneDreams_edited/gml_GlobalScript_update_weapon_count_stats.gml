@@ -1,5 +1,6 @@
 function update_weapon_count_stats(arg0, arg1)
 {
+    // Weapon counts are always updated; there is no freeplay mode that skips them.
     if (arg0 == "Core")
     {
         obj_stat_track.stat_core_picked += arg1;

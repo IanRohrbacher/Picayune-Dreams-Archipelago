@@ -5,12 +5,15 @@ global.screenh = 540;
 surface_resize(application_surface, global.screenw, global.screenh);
 display_set_gui_size(global.screenw, global.screenh);
 display_reset(0, true);
+// Dev tools switch (false in release builds); the version is shown in the connect room and the main menu.
 global.ap_debug_tools = true;
-global.ap_version = "AP 0.5.1";
+global.ap_version = "AP 0.5.2";
+// Everything the game writes goes to save/ next to the exe.
 global.save_dir = program_directory + "save/";
 if (!directory_exists(global.save_dir)) directory_create(global.save_dir);
 ap_log_begin();
 log("version " + global.ap_version + ", debug tools " + string(global.ap_debug_tools));
+// Sets global.save_options (game.sav, the shared options) and the active slot file (global.save).
 ap_save_init();
 global.is_game_restarting = false;
 global.steam_api = 0;
@@ -61,6 +64,7 @@ global.def_kb_ff = 81;
 global.def_gp_ff = 32779;
 global.def_kb_changesong = 80;
 global.def_gp_changesong = 32772;
+// Options are shared by every slot; ap_profile_load() reads the slot's progress.
 ini_open(global.save_options);
 global.musvol = ini_read_real("options", "musvol", global.def_musvol);
 global.sndvol = ini_read_real("options", "sndvol", global.def_sndvol);

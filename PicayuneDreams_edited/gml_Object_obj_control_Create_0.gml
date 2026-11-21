@@ -1,3 +1,4 @@
+// Every run uses a random seed; there are no daily or monthly seeds.
 randomize();
 
 objview = instance_create_layer(x, y, "Overlay", obj_view);

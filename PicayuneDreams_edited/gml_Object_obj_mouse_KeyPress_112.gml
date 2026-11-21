@@ -1,3 +1,4 @@
+// The console opens with Tab + F1 only while dev tools are on.
 if (global.ap_debug_tools)
 {
     if (keyboard_check(vk_tab))

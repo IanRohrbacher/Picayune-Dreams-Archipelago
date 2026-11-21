@@ -17,6 +17,7 @@ if (instance_place(x, y, obj_mouse))
 
     if (mouse_check_button_released(mb_left) || global.gp_accept_pressed)
     {
+        // The click-to-restore-save and hold-to-nuke-save buttons are not supported by this Archipelago build.
         if (toggled == 0)
         {
             toggled = 1;

@@ -11,4 +11,5 @@ else
 
 display_set_gui_size(global.screenw, global.screenh);
 
+// Creates the slot and connect screen.
 instance_create_layer(0, 0, "Instances", obj_ap_connect);

@@ -120,6 +120,7 @@ good_first_stage = false;
 command_to_run = -1;
 focus = 0;
 temp_post_message = "";
+// The console history file is kept in the save folder.
 history_file_path = global.save_dir + history_file_name;
 view_destroyed_frames = 200;
 view_intro_highlight_frames = 10;

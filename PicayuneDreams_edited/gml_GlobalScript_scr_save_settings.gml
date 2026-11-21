@@ -1,5 +1,6 @@
 function scr_save_settings()
 {
+    // Options are shared by every slot, so they are written to game.sav.
     log("save settings -> " + global.save_options);
     ini_open(global.save_options);
     ini_write_real("options", "musvol", global.musvol);

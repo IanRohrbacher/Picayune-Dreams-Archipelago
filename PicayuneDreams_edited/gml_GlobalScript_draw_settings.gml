@@ -476,6 +476,7 @@ function draw_settings()
                 noshow = true;
             }
         }
+        // The Archipelago tab has no rows yet.
         else if (obj_settings.selected == "ARCHIPELAGO")
         {
             bar_power = -1;
@@ -903,6 +904,7 @@ function draw_settings()
         }
     }
     
+    // Five tabs share the screen width.
     var tab_w = (var_Screenw - 2) / 5;
     
     for (var i = 0; i < 5; i += 1)
@@ -978,6 +980,7 @@ function draw_settings()
     }
     
     draw_sprite_ext(global.sprites.spr_sett_finished, 0, var_Screenw - finished_butt_h_width - 1, var_Screenh - finished_butt_h_height - 1, 1, 1, 0, c_white, finished_hover_alph);
+    // Connection status sits beside the save button.
     ap_ui_status_line(var_Screenw - finished_butt_width - 14, var_Screenh - finished_butt_h_height - 1);
     var reset_spr = global.sprites.spr_sett_reset_butt;
     var reset_butt_width = sprite_get_width(reset_spr);

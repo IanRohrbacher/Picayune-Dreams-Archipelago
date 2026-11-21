@@ -1,5 +1,6 @@
 function try_to_unlock_achievements()
 {
+    // The checks below are disabled; most will be converted to ap checks later
     // if (global.gamemode != "freeplay")
     // {
     //     if (obj_stat_track.stat_total_kills >= 10000)

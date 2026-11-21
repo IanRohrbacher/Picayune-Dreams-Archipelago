@@ -1,3 +1,4 @@
+// Appends a line to ap_game_log.txt next to the exe, without the program path; arg1 is the level (0 info, 1 warn, 2 error).
 function log(arg0 = "", arg1 = 0)
 {
     var level = "INFO";

@@ -9,6 +9,7 @@ function scr_saveallgamestats()
     global.dialog_lastkilledby = global.facing_boss;
     obj_stat_track.stat_times_died += 1;
     
+    // Progress is always written to the active slot file (global.save); no rolling backup copies are made.
     ini_open(global.save);
     ini_write_string("boss", "lastkilledby", global.dialog_lastkilledby);
     ini_write_string("boss", "gremlin_timesvisit", global.dialog_gremlin_visits);
