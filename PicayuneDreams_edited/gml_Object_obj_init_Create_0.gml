@@ -7,7 +7,9 @@ display_set_gui_size(global.screenw, global.screenh);
 display_reset(0, true);
 // Dev tools switch (false in release builds); the version is shown in the connect room and the main menu.
 global.ap_debug_tools = true;
-global.ap_version = "AP 0.5.2";
+global.ap_version = "AP 0.6.0";
+// gm-apclientpp release whose DLL the build copies next to the exe (scripts/setup.py downloads it).
+global.gm_apclientpp_version = "v0.6.6";
 // Everything the game writes goes to save/ next to the exe.
 global.save_dir = program_directory + "save/";
 if (!directory_exists(global.save_dir)) directory_create(global.save_dir);
@@ -15,6 +17,7 @@ ap_log_begin();
 log("version " + global.ap_version + ", debug tools " + string(global.ap_debug_tools));
 // Sets global.save_options (game.sav, the shared options) and the active slot file (global.save).
 ap_save_init();
+apclient_setup();
 global.is_game_restarting = false;
 global.steam_api = 0;
 global.cheater = false;

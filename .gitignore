@@ -18,4 +18,8 @@ logs/
 # python / uv
 .venv/
 __pycache__/
-.pytest_cache/
+.pytest_cache/.pytest_cache/
+
+# gm-apclientpp release DLL copied here by hand; setup.py downloads the one the build uses
+gm-apclientpp-win64/
+

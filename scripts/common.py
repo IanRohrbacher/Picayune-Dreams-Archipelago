@@ -1,6 +1,7 @@
 """Paths and helpers shared by the project scripts."""
 
 import fnmatch
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,6 +31,16 @@ LINK_ROOM_CODE_SCRIPT = ROOT / "scripts" / "utmt" / "link_room_code.csx"
 BUILD_SCRIPTS = [ADD_ROOMS_SCRIPT, IMPORT_CODE_SCRIPT, LINK_ROOM_CODE_SCRIPT]
 MODDED_DIR = ROOT / "game_files_modded"
 
+# the gm-apclientpp release to use is the tag in global.gm_apclientpp_version in obj_init Create
+INIT_GML = EDIT_DIR / "gml_Object_obj_init_Create_0.gml"
+GM_APCLIENT_DIR = GAME_FILES_DIR / "gm-apclientpp"  # one <tag>/ folder per downloaded release
+GM_APCLIENT_DLL = "gm-apclientpp.dll"
+GM_APCLIENT_URL = "https://github.com/black-sliver/gm-apclientpp/releases/download/{tag}/gm-apclientpp-win64.zip"
+# written next to the DLL in game_files_modded so a build can tell which release is installed
+GM_APCLIENT_VERSION_FILE = "gm-apclientpp.version"
+_GM_APCLIENT_TAG = re.compile(r'global\.gm_apclientpp_version\s*=\s*"([^"]*)"\s*;')
+_RELEASE_TAG = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
 GAME_FOLDER_NAME = "Picayune Dreams"
 # steam_appid.txt next to the exe stops the Steam API from relaunching the
 # official install when the exe is started outside Steam
@@ -50,6 +61,18 @@ GAME_FILE_WHITELIST = [
     "Steamworks_x64.dll",
     "mods",
 ]
+
+
+def read_gm_apclient_version(init_gml: Path = INIT_GML) -> str:
+    """The gm-apclientpp release tag set in global.gm_apclientpp_version; raises ValueError when it is missing or unsafe."""
+    match = _GM_APCLIENT_TAG.search(init_gml.read_text(encoding="utf-8"))
+    if match is None:
+        raise ValueError(f"global.gm_apclientpp_version is not set in {init_gml.name}")
+    tag = match.group(1)
+    # the tag becomes part of a download URL and a folder name
+    if _RELEASE_TAG.fullmatch(tag) is None:
+        raise ValueError(f"invalid gm-apclientpp release tag {tag!r} in {init_gml.name}")
+    return tag
 
 
 def extract_section(text: str, name: str) -> str | None:

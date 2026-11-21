@@ -13,8 +13,9 @@ uv run scripts/setup.py
 
 1. copies the whitelisted game files into `game_files/game`
 2. copies your whole save folder into `game_files/save` (the real one is only read)
-3. downloads the UndertaleModTool GUI and CLI
-4. decompiles `game_files/game/data.win` into `PicayuneDreams_extract` and checks it against `scripts/extract.sha256`
+3. downloads the `gm-apclientpp` release named by `global.gm_apclientpp_version` in `obj_init` into `game_files/gm-apclientpp/<tag>`
+4. downloads the UndertaleModTool GUI and CLI
+5. decompiles `game_files/game/data.win` into `PicayuneDreams_extract` and checks it against `scripts/extract.sha256`
 
 Finished steps are skipped; `--force` redoes them.
 
@@ -49,6 +50,10 @@ uv run scripts/build.py                      # game_files/game + PicayuneDreams_
 uv run scripts/build.py --fresh-save         # also delete game_files_modded/save/ (game starts from its defaults)
 uv run scripts/build.py --transfer-options   # also copy your [options] from game_files/save/game.sav, leaving other saves alone
 ```
+
+The build also copies `gm-apclientpp.dll` (the release set by `global.gm_apclientpp_version` in `obj_init`, downloaded
+by `setup.py`) into `game_files_modded/`, but only when it is missing or a different release is installed there.
+To use another release, change that tag and run `uv run scripts/setup.py` to download it.
 
 ## Tests
 

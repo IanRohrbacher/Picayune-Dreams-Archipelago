@@ -2,8 +2,9 @@
 
   1. copy the whitelisted game files      -> game_files/game   (work on a copy, never the install)
   2. copy your save folder                -> game_files/save   (read only; the source for build.py --transfer-options)
-  3. download UndertaleModTool GUI + CLI
-  4. decompile game_files/game/data.win    -> PicayuneDreams_extract, then check it against the baseline
+  3. download the gm-apclientpp DLL release named in obj_init -> game_files/gm-apclientpp/<tag>
+  4. download UndertaleModTool GUI + CLI
+  5. decompile game_files/game/data.win    -> PicayuneDreams_extract, then check it against the baseline
 
 The game and save folders are always asked for; a detected path is offered
 and accepted with Enter. Steps whose result already exists are skipped
@@ -32,6 +33,9 @@ from common import (
     GAME_DIR,
     GAME_FILE_WHITELIST,
     GAME_FOLDER_NAME,
+    GM_APCLIENT_DIR,
+    GM_APCLIENT_DLL,
+    GM_APCLIENT_URL,
     ROOT,
     SAVE_FOLDER_NAME,
     USER_SAVE_DIR,
@@ -39,6 +43,7 @@ from common import (
     UTMT_CLI_URL,
     UTMT_DIR,
     UTMT_URL,
+    read_gm_apclient_version,
 )
 
 
@@ -151,6 +156,11 @@ def download_zip(url: str, target_dir: Path, exe_name: str, force: bool) -> None
     print(f"  extracted to {target_dir.relative_to(ROOT)}")
 
 
+def install_gm_apclient(tag: str, force: bool) -> None:
+    """Downloads the win64 gm-apclientpp release `tag` into GM_APCLIENT_DIR/<tag>, unless its DLL is already there."""
+    download_zip(GM_APCLIENT_URL.format(tag=tag), GM_APCLIENT_DIR / tag, GM_APCLIENT_DLL, force)
+
+
 def export_code(data_win: Path, out_dir: Path) -> bool:
     """Decompiles data_win into out_dir with the UndertaleModTool CLI."""
     cli = UTMT_CLI_DIR / "UndertaleModCli.exe"
@@ -181,19 +191,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true", help="redo steps whose result already exists")
     args = parser.parse_args(argv)
 
-    print("[1/4] game files")
+    print("[1/5] game files")
     game_dir = ask_dir("game install folder", detect_game_dir(), required_file="data.win")
     copy_game_files(game_dir, GAME_DIR, args.force)
 
-    print("[2/4] your save")
+    print("[2/5] your save")
     save_dir = ask_dir("save data folder", detect_save_dir())
     copy_user_save(save_dir, USER_SAVE_DIR, args.force)
 
-    print("[3/4] UndertaleModTool")
+    print("[3/5] gm-apclientpp")
+    try:
+        tag = read_gm_apclient_version()
+    except (OSError, ValueError) as error:
+        print(f"  error: {error}")
+        return 1
+    install_gm_apclient(tag, args.force)
+
+    print("[4/5] UndertaleModTool")
     download_zip(UTMT_URL, UTMT_DIR, "UndertaleModTool.exe", args.force)
     download_zip(UTMT_CLI_URL, UTMT_CLI_DIR, "UndertaleModCli.exe", args.force)
 
-    print("[4/4] decompiled code")
+    print("[5/5] decompiled code")
     EDIT_DIR.mkdir(exist_ok=True)
     if EXTRACT_DIR.is_dir() and not args.force:
         print(f"  skip: {EXTRACT_DIR.relative_to(ROOT)} already exists")

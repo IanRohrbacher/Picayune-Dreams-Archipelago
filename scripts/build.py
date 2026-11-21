@@ -1,7 +1,9 @@
 """Builds the patched game into game_files_modded/.
 
   1. copy the whitelisted game files from game_files/game -> game_files_modded,
-     plus steam_appid.txt
+     plus steam_appid.txt and gm-apclientpp.dll (the release named by
+     global.gm_apclientpp_version in obj_init, downloaded by scripts/setup.py);
+     the DLL is copied only when it is missing or another release is installed
   2. with --fresh-save, delete game_files_modded/save so the game starts from
      its defaults; otherwise the current save is kept. With --transfer-options,
      copy the [options] section of game_files/save/game.sav (your save, copied
@@ -35,6 +37,10 @@ from common import (
     BUILD_SCRIPTS,
     EDIT_DIR,
     GAME_DIR,
+    GM_APCLIENT_DIR,
+    GM_APCLIENT_DLL,
+    GM_APCLIENT_VERSION_FILE,
+    INIT_GML,
     MODDED_DIR,
     MODDED_SAVE_DIR,
     NEW_DIR,
@@ -45,6 +51,7 @@ from common import (
     UTMT_CLI_DIR,
     extract_section,
     find_duplicates,
+    read_gm_apclient_version,
     replace_section,
 )
 from setup import copy_game_files
@@ -54,6 +61,30 @@ def write_steam_appid(dst) -> None:
     """Writes steam_appid.txt so the exe runs the build in dst, not the Steam install."""
     (dst / "steam_appid.txt").write_text(STEAM_APP_ID, encoding="ascii")
     print("  wrote steam_appid.txt")
+
+
+def copy_gm_apclient(tag, dst) -> bool:
+    """Copies the gm-apclientpp DLL of release `tag` into dst, unless that release is already installed there."""
+    source = GM_APCLIENT_DIR / tag / GM_APCLIENT_DLL
+    if not source.is_file():
+        print(f"  error: {source.relative_to(ROOT)} not found (run scripts/setup.py)")
+        return False
+
+    target = dst / GM_APCLIENT_DLL
+    marker = dst / GM_APCLIENT_VERSION_FILE
+    installed = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
+    if target.is_file() and installed == tag:
+        print(f"  {GM_APCLIENT_DLL} {tag} is already installed")
+        return True
+
+    try:
+        shutil.copy2(source, target)
+    except PermissionError:
+        print(f"  error: cannot replace {target.relative_to(ROOT)}; close the game and build again")
+        return False
+    marker.write_text(tag, encoding="utf-8")
+    print(f"  copied {GM_APCLIENT_DLL} {tag}")
+    return True
 
 
 def reset_save(save_dir) -> None:
@@ -137,9 +168,21 @@ def main(argv: list[str] | None = None) -> int:
             print()
         return 1
 
+    try:
+        gm_apclient_tag = read_gm_apclient_version(INIT_GML)
+    except (OSError, ValueError) as error:
+        print(f"error: {error}")
+        return 1
+    gm_apclient_dll = GM_APCLIENT_DIR / gm_apclient_tag / GM_APCLIENT_DLL
+    if not gm_apclient_dll.is_file():
+        print(f"error: {gm_apclient_dll.relative_to(ROOT)} not found (run scripts/setup.py)")
+        return 1
+
     print("[1/3] game files")
     copy_game_files(GAME_DIR, MODDED_DIR, force=True)
     write_steam_appid(MODDED_DIR)
+    if not copy_gm_apclient(gm_apclient_tag, MODDED_DIR):
+        return 1
 
     print("[2/3] save")
     if args.fresh_save:

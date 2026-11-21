@@ -19,7 +19,12 @@ def make_layout(tmp_path, monkeypatch, with_edited=True, with_new=True):
         "MODDED_DIR": modded,
         "MODDED_SAVE_DIR": modded / "save",
         "USER_SAVE_DIR": tmp_path / "user_save",
+        "INIT_GML": tmp_path / "init.gml",
+        "GM_APCLIENT_DIR": tmp_path / "apclient",
     }
+    (tmp_path / "init.gml").write_text('global.gm_apclientpp_version = "v1.0.0";\n')
+    (tmp_path / "apclient" / "v1.0.0").mkdir(parents=True)
+    (tmp_path / "apclient" / "v1.0.0" / "gm-apclientpp.dll").write_bytes(b"dll-1")
     for name, value in paths.items():
         monkeypatch.setattr(build, name, value)
     monkeypatch.setattr("setup.ROOT", tmp_path)
@@ -227,3 +232,68 @@ def test_transfer_options_needs_the_copied_save(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "import_code", lambda *args: True)
 
     assert build.main(["--transfer-options"]) == 1
+
+def test_main_copies_the_apclient_dll_and_records_its_release(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+
+    assert build.main([]) == 0
+
+    assert (modded / "gm-apclientpp.dll").read_bytes() == b"dll-1"
+    assert (modded / "gm-apclientpp.version").read_text() == "v1.0.0"
+
+
+def test_main_keeps_the_apclient_dll_of_the_same_release(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    modded.mkdir()
+    (modded / "gm-apclientpp.dll").write_bytes(b"installed")
+    (modded / "gm-apclientpp.version").write_text("v1.0.0")
+
+    assert build.main([]) == 0
+
+    assert (modded / "gm-apclientpp.dll").read_bytes() == b"installed"
+
+
+def test_main_replaces_the_apclient_dll_of_another_release(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    modded.mkdir()
+    (modded / "gm-apclientpp.dll").write_bytes(b"old")
+    (modded / "gm-apclientpp.version").write_text("v0.9.0")
+
+    assert build.main([]) == 0
+
+    assert (modded / "gm-apclientpp.dll").read_bytes() == b"dll-1"
+    assert (modded / "gm-apclientpp.version").read_text() == "v1.0.0"
+
+
+def test_main_copies_the_apclient_dll_when_only_the_version_file_remains(tmp_path, monkeypatch):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr(build, "import_code", lambda *args: True)
+    modded.mkdir()
+    (modded / "gm-apclientpp.version").write_text("v1.0.0")
+
+    assert build.main([]) == 0
+
+    assert (modded / "gm-apclientpp.dll").read_bytes() == b"dll-1"
+
+
+def test_main_fails_before_copying_without_the_downloaded_dll(tmp_path, monkeypatch, capsys):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    (build.GM_APCLIENT_DIR / "v1.0.0" / "gm-apclientpp.dll").unlink()
+
+    assert build.main([]) == 1
+
+    assert "scripts/setup.py" in capsys.readouterr().out
+    assert not modded.exists()
+
+
+def test_main_fails_without_a_release_tag(tmp_path, monkeypatch, capsys):
+    _, _, modded = make_layout(tmp_path, monkeypatch)
+    build.INIT_GML.write_text("global.ap_version = 1;\n")
+
+    assert build.main([]) == 1
+
+    assert "gm_apclientpp_version" in capsys.readouterr().out
+    assert not modded.exists()
